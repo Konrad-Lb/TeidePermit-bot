@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermitService", "PermitService\PermitService.csproj", "{C2031DDB-1BA5-482F-911D-8A6822488D71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermitServiceTest", "PermitServiceTest\PermitServiceTest.csproj", "{B1136574-0FCF-46E1-9C77-1B4590FBD064}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{C2031DDB-1BA5-482F-911D-8A6822488D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2031DDB-1BA5-482F-911D-8A6822488D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2031DDB-1BA5-482F-911D-8A6822488D71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1136574-0FCF-46E1-9C77-1B4590FBD064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1136574-0FCF-46E1-9C77-1B4590FBD064}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1136574-0FCF-46E1-9C77-1B4590FBD064}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1136574-0FCF-46E1-9C77-1B4590FBD064}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

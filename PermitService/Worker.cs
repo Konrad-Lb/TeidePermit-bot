@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using PermitService.Configuration;
 
 namespace PermitService
 {
