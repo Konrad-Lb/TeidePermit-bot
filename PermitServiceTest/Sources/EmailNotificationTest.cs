@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using PermitService.Sources;
 
-namespace PermitServiceTest
+namespace PermitServiceTest.Sources
 {
     [TestFixture]
     public class EmailNotificationTest
