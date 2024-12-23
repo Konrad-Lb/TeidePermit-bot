@@ -12,9 +12,9 @@ namespace PermitService.Sources
     public class EmailNotification : IEmailNotification
     {
         private readonly ISmtpClientAdapter _smtpClientAdapter;
-        private readonly AppSettings _appSettings;
+        private readonly IAppSettings _appSettings;
         
-        public EmailNotification(ISmtpClientAdapter smtpClientAdapter, AppSettings appSettings)
+        public EmailNotification(ISmtpClientAdapter smtpClientAdapter, IAppSettings appSettings)
         {
             _smtpClientAdapter = smtpClientAdapter;
             _appSettings = appSettings;
@@ -24,9 +24,11 @@ namespace PermitService.Sources
         {
             var mailMessage = new MailMessage()
             {
+                From = _appSettings.SenderEmailAddress,
                 Subject = emailSubject,
                 Body = emailBody
             };
+
             await _smtpClientAdapter.SendAsync(mailMessage);
         }
     }

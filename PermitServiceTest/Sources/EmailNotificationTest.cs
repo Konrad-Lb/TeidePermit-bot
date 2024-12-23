@@ -14,7 +14,8 @@ namespace PermitServiceTest.Sources
         public async Task SendEmailAsync_SendEmailWithSubjectAndBody_EmailSentWithProperMailMessage()
         {
             var smtpClientMock = new Mock<ISmtpClientAdapter>();
-            var appSettingsStub = new Mock<AppSettings>();
+            var appSettingsStub = new Mock<IAppSettings>();
+            appSettingsStub.Setup(x => x.SenderEmailAddress).Returns(new SenderEmailAddress("sender@test.com", "sender_disp_name"));
             var emailSubject = "emailSubject";
             var emailBody = "emailBody";
             
@@ -23,6 +24,9 @@ namespace PermitServiceTest.Sources
 
             smtpClientMock.Verify(x => 
                 x.SendAsync(It.Is<MailMessage>(mailMsg => 
+                    mailMsg.From != null &&
+                    appSettingsStub.Object.SenderEmailAddress != null &&
+                    mailMsg.From.Equals((MailAddress)appSettingsStub.Object.SenderEmailAddress) &&
                     mailMsg.Subject == emailSubject &&
                     mailMsg.Body == emailBody
                     )),
