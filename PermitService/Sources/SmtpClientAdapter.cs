@@ -9,26 +9,21 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class SmtpClientAdapter : ISmtpClientAdapter
+    public class SmtpClientAdapter(SmtpClientSettings smtpClientSettings) : ISmtpClientAdapter
     {
-        private readonly SmtpClient _smtpClient;
-
-        public SmtpClientAdapter(SmtpClientSettings smtpClientSettings)
+        private readonly SmtpClient _smtpClient = new()
         {
-            _smtpClient = new SmtpClient
+            Host = smtpClientSettings.Host,
+            Port = smtpClientSettings.Port,
+            DeliveryMethod = SmtpDeliveryMethod.Network,
+            UseDefaultCredentials = true,
+            EnableSsl = smtpClientSettings.EnableSsl,
+            Credentials = new NetworkCredential
             {
-                Host = smtpClientSettings.Host,
-                Port = smtpClientSettings.Port,
-                DeliveryMethod = SmtpDeliveryMethod.Network,
-                UseDefaultCredentials = true,
-                EnableSsl = smtpClientSettings.EnableSsl,
-                Credentials = new NetworkCredential
-                {
-                    UserName = smtpClientSettings.UserName,
-                    Password = smtpClientSettings.Password,
-                }
-            };
-        }
+                UserName = smtpClientSettings.UserName,
+                Password = smtpClientSettings.Password,
+            }
+        };
         
         public SmtpDeliveryMethod DeliveryMethod
         {
