@@ -8,14 +8,9 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class SmtpClientAdapter : ISmtpClientAdapter
+    public class SmtpClientAdapter(string? host, int port) : ISmtpClientAdapter
     {
-        private readonly SmtpClient _smtpClient;
-
-        public SmtpClientAdapter(string? host, int port)
-        {
-            _smtpClient = new SmtpClient(host, port);
-        }
+        private readonly SmtpClient _smtpClient = new (host, port);
 
         public SmtpDeliveryMethod DeliveryMethod
         {

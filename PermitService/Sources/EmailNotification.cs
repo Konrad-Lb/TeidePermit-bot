@@ -9,27 +9,26 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class EmailNotification : IEmailNotification
+    public class EmailNotification(ISmtpClientAdapter smtpClientAdapter, IAppSettings appSettings)  : IEmailNotification
     {
-        private readonly ISmtpClientAdapter _smtpClientAdapter;
-        private readonly IAppSettings _appSettings;
-        
-        public EmailNotification(ISmtpClientAdapter smtpClientAdapter, IAppSettings appSettings)
+        public async Task SendEmailAsync(string emailSubject, string emailBody, MailAddress recipientEmailAddress)
         {
-            _smtpClientAdapter = smtpClientAdapter;
-            _appSettings = appSettings;
+            var mailMessage = CreateMailMessage(emailSubject, emailBody, recipientEmailAddress);   
+            await smtpClientAdapter.SendAsync(mailMessage);
         }
 
-        public async Task SendEmailAsync(string emailSubject, string emailBody)
+        private MailMessage CreateMailMessage(string emailSubject, string emailBody, MailAddress recipientEmailAddress)
         {
-            var mailMessage = new MailMessage()
+            var mailMessage =  new MailMessage()
             {
-                From = _appSettings.SenderEmailAddress,
+                From = appSettings.SenderEmailAddress,
                 Subject = emailSubject,
                 Body = emailBody
             };
 
-            await _smtpClientAdapter.SendAsync(mailMessage);
+            mailMessage.To.Add(recipientEmailAddress);
+
+            return mailMessage;
         }
     }
 }
