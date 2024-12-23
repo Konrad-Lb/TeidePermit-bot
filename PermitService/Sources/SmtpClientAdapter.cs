@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PermitService.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -8,10 +9,27 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class SmtpClientAdapter(string? host, int port) : ISmtpClientAdapter
+    public class SmtpClientAdapter : ISmtpClientAdapter
     {
-        private readonly SmtpClient _smtpClient = new (host, port);
+        private readonly SmtpClient _smtpClient;
 
+        public SmtpClientAdapter(SmtpClientSettings smtpClientSettings)
+        {
+            _smtpClient = new SmtpClient
+            {
+                Host = smtpClientSettings.Host,
+                Port = smtpClientSettings.Port,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = true,
+                EnableSsl = smtpClientSettings.EnableSsl,
+                Credentials = new NetworkCredential
+                {
+                    UserName = smtpClientSettings.UserName,
+                    Password = smtpClientSettings.Password,
+                }
+            };
+        }
+        
         public SmtpDeliveryMethod DeliveryMethod
         {
             get => _smtpClient.DeliveryMethod;
