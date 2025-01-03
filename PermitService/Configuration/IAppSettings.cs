@@ -5,5 +5,6 @@
         int RequestIntervalInSeconds { get; set; }
         SenderEmailAddress SenderEmailAddress { get; set; }
         SmtpClientSettings SmtpClientSettings { get; set; }
+        string ScrapURL { get; set; }
     }
 }

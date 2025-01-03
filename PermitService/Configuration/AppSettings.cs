@@ -12,6 +12,7 @@ namespace PermitService.Configuration
         public int RequestIntervalInSeconds { get; set; }
         public SenderEmailAddress SenderEmailAddress { get; set; } = new SenderEmailAddress();
         public SmtpClientSettings SmtpClientSettings { get; set; } = new SmtpClientSettings();
+        public string ScrapURL { get; set; } = string.Empty;
     }
 
 }
