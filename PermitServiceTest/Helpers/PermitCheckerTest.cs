@@ -26,44 +26,44 @@ namespace PermitServiceTest.Helpers
         [Test]
         public void GetAvailableDays_NoAvailableDays_DictionaryIsEmpty()
         {
-            string currentMonthCallendar = "<html>" +
-            "<table>" +
-                "<tbody>" +
-                    "<tr>" +
-                        "<td class=\"dias\" style=\"background-color:Gray;\">" +
-                            "<a href=\"\" style=\"color:Black\" title=\"5 de mayo\">5</a>" +
-                        "</td>" +
-                        "<td class=\"dias\" style=\"background-color:Black;\">" +
-                            "<a href=\"\" style=\"color:Black\" title=\"6 de mayo\">6</a>" +
-                        "</td>"+
-                    "</tr>" +
-                "</tbody>" +
-            "</table>" +
-            "</html>";
-            _webDriverMock.Setup(x => x.PageSource).Returns(currentMonthCallendar);
+            var currMonthCallendar = new StringBuilder();
+            currMonthCallendar.Append("<html>");
+            currMonthCallendar.Append(" <tbody>");
+            currMonthCallendar.Append("     <tr>");
+            currMonthCallendar.Append("         <td class=\"dias\" style=\"background-color:Gray;\">");
+            currMonthCallendar.Append("             <a href=\"\" style=\"color:Black\" title=\"5 de mayo\">5</a>");
+            currMonthCallendar.Append("         </td>");
+            currMonthCallendar.Append("         <td class=\"dias\" style=\"background-color:Black;\">");
+            currMonthCallendar.Append("             <a href=\"\" style=\"color:Black\" title=\"6 de mayo\">6</a>");
+            currMonthCallendar.Append("         </td>");
+            currMonthCallendar.Append("     </tr>");
+            currMonthCallendar.Append(" </tbody>");
+            currMonthCallendar.Append("</html>");
 
-            var availableDays = PermitChecker.GetAvailableDays(_webDriverMock.Object);
+            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+
+            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays();
             Assert.That(availableDays.Count, Is.EqualTo(0));
         }
 
         [Test]
         public void GetAvailableDays_OneAvailableDayOnFifthOfMay_DictonaryHasOneEntry()
         {
-            string currentMonthCallendar = "<html>" +
-            "<table>" +
-                "<tbody>" +
-                    "<tr>" +
-                        "<td class=\"dias\" style=\"background-color:WhiteSmoke;\">" +
-                            "<a href=\"\" style=\"color:Black\" title=\"5 de mayo\">5</a>" +
-                        "</td>" +
-                    "</tr>" +
-                "</tbody>" +
-            "</table>"+
-            "</html>";
-            _webDriverMock.Setup(x => x.PageSource).Returns(currentMonthCallendar);
+            var currMonthCallendar = new StringBuilder();
+            currMonthCallendar.Append("<html>");
+            currMonthCallendar.Append(" <tbody>");
+            currMonthCallendar.Append("     <tr>");
+            currMonthCallendar.Append("         <td class=\"dias\" style=\"background-color:WhiteSmoke;\">");
+            currMonthCallendar.Append("             <a href=\"\" style=\"color:Black\" title=\"5 de mayo\">5</a>");
+            currMonthCallendar.Append("         </td>");
+            currMonthCallendar.Append("     </tr>");
+            currMonthCallendar.Append(" </tbody>");
+            currMonthCallendar.Append("</html>");
+
+            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
             
-            var availableDays = PermitChecker.GetAvailableDays(_webDriverMock.Object);
-            
+            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays();
+
             Assert.That(availableDays.ContainsKey(Month.May) , Is.True);
             Assert.That(availableDays[Month.May].Count, Is.EqualTo(1));
             Assert.That(availableDays[Month.May].First, Is.EqualTo(5));
@@ -71,6 +71,9 @@ namespace PermitServiceTest.Helpers
 
         //diffrent date single days available test
         //style vs bgcolor attribute
+        //diffrent months check
+        //multiple in the same month check
+        //optimize to check only given months
         //webelement Button1 not foound
         //test wait.Until
         //tes calendar script failed
@@ -78,5 +81,7 @@ namespace PermitServiceTest.Helpers
         //one day available - others are not available
         //current month detection on website
         //no page content
+        //tdHtmlNode not found
+
     }
 }
