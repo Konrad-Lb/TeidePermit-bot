@@ -1,5 +1,7 @@
 ﻿using HtmlAgilityPack;
 using OpenQA.Selenium;
+using OpenQA.Selenium.DevTools.V129.HeapProfiler;
+using OpenQA.Selenium.DevTools.V129.Input;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 using System.Diagnostics.Eventing.Reader;
@@ -7,16 +9,20 @@ using System.Diagnostics.Eventing.Reader;
 namespace PermitService.Helpers
 {
     public class PermitChecker(IWebDriver webDriver)
-    { 
-        public IDictionary<Month,List<int>> GetAvailableDays()
+    {
+        private Month _currentMonth;
+        private HtmlDocument? _htmlDocumemt;
+        
+        public IDictionary<Month,List<int>> GetAvailableDays(Month month)
         {
+            _currentMonth = month;
+            
             ClickNextStepLink();
 
-            var result = new Dictionary<Month, List<int>>();
-            if(IsPemitAvailable(webDriver.PageSource))
-                result.Add(Month.May, [5]);
+            _htmlDocumemt = new HtmlDocument();
+            _htmlDocumemt.LoadHtml(webDriver.PageSource);
 
-            return result;
+            return GetPermits();
         }
 
         private void ClickNextStepLink()
@@ -25,15 +31,47 @@ namespace PermitService.Helpers
             nextStepLink.Click();
         }
 
-        private static bool IsPemitAvailable(string pageContent)
+        private bool PermitsForMonthShouldBeChecked()
         {
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(pageContent);
+            var tdMessesCollection = _htmlDocumemt?.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']");
+            return tdMessesCollection != null && tdMessesCollection.First().InnerHtml.Contains(SpanishMonthTranslator.GetTranslationLowerCase(_currentMonth));
+        }
 
-            var tdHtmlNode = htmlDoc.DocumentNode.SelectNodes("//a[@title=\"5 de mayo\"]/parent::td").First();
-            var styleAttribute = tdHtmlNode.Attributes["style"] ?? tdHtmlNode.Attributes["bgcolor"];
+        private List<int> GetAvailableDaysForMonth()
+        {
+            var result = new List<int>();
+            var tdDiasCollection = _htmlDocumemt?.DocumentNode.SelectNodes("//td[@class=\"dias\"]");
+            if (tdDiasCollection != null)
+                foreach (var td in tdDiasCollection)
+                {
+                    var dayNumber = GetDayNumberIfPermitAvailable(td);
+                    if (dayNumber.HasValue)
+                        result.Add(dayNumber.Value);
+                }
 
-            return styleAttribute.Value != null && styleAttribute.Value.Contains("WhiteSmoke");
+            return result;
+        }
+
+        private static int? GetDayNumberIfPermitAvailable(HtmlNode callendarDayCell)
+        {
+            var styleAttribute = callendarDayCell.Attributes["style"] ?? callendarDayCell.Attributes["bgcolor"];
+            if (styleAttribute.Value != null && styleAttribute.Value.Contains("WhiteSmoke"))
+                return Int32.Parse(callendarDayCell.ChildNodes.Where(x => x.Name == "a").First().InnerText);
+            
+            return null;
+        }
+
+        private IDictionary<Month, List<int>> GetPermits()
+        {
+            var result = new Dictionary<Month, List<int>>();
+            if (PermitsForMonthShouldBeChecked())
+            {
+                var availableDays = GetAvailableDaysForMonth();
+                if (availableDays.Count > 0)
+                    result[_currentMonth] = availableDays;
+            }
+
+            return result;
         }
     }
 }
