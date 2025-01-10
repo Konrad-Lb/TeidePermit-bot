@@ -3,29 +3,24 @@ namespace PermitService.Helpers
 {
     public static class SpanishMonthTranslator
     {
-        public static string GetTranslation(Month month)
+        public static Month CreateMonthFromSpanishName(string monthName)
         {
-            return month switch
+            return monthName.ToLower() switch
             {
-                Month.January => "Enero",
-                Month.February => "Febrero",
-                Month.March => "Marzo",
-                Month.April => "Abril",
-                Month.May => "Mayo",
-                Month.June => "Junio",
-                Month.July => "Julio",
-                Month.August => "Agosto",
-                Month.September => "Septiembre",
-                Month.October => "Octubre",
-                Month.November => "Noviembre",
-                Month.December => "Diciembre",
-                _ => "Invalid month"
+                "enero" => Month.January,
+                "febrero" => Month.February,
+                "marzo" => Month.March,
+                "abril" => Month.April,
+                "mayo" => Month.May,
+                "junio" => Month.June,
+                "julio" => Month.July,
+                "agosto" => Month.August,
+                "septiembre" => Month.September,
+                "octubre" => Month.October,
+                "noviembre" => Month.November,
+                "diciembre" => Month.December,
+                _ => throw new InvalidOperationException($"Not recognized Spanish month name: {monthName}")
             };
-        }
-
-        public static string GetTranslationLowerCase(Month month)
-        {
-            return GetTranslation(month).ToLower();
         }
     }
 }

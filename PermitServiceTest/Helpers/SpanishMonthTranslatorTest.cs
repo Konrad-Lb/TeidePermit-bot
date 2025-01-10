@@ -12,37 +12,38 @@ namespace PermitServiceTest.Helpers
     public class SpanishMonthTranslatorTest
     {
         [Test]
-        public void GetTranslation_CheckAllTranslations_ProperTranslationReturned()
+        public void CreateMonthFromSpanishName_LoweCaseMonthNames_MonthsCreatedProperly()
         {
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.January), Is.EqualTo("Enero"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.February), Is.EqualTo("Febrero"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.March), Is.EqualTo("Marzo"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.April), Is.EqualTo("Abril"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.May), Is.EqualTo("Mayo"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.June), Is.EqualTo("Junio"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.July), Is.EqualTo("Julio"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.August), Is.EqualTo("Agosto"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.September), Is.EqualTo("Septiembre"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.October), Is.EqualTo("Octubre"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.November), Is.EqualTo("Noviembre"));
-            Assert.That(SpanishMonthTranslator.GetTranslation(Month.December), Is.EqualTo("Diciembre"));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("enero"), Is.EqualTo(Month.January));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("febrero"), Is.EqualTo(Month.February));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("marzo"), Is.EqualTo(Month.March));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("abril"), Is.EqualTo(Month.April));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("mayo"), Is.EqualTo(Month.May));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("junio"), Is.EqualTo(Month.June));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("julio"), Is.EqualTo(Month.July));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("agosto"), Is.EqualTo(Month.August));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("septiembre"), Is.EqualTo(Month.September));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("octubre"), Is.EqualTo(Month.October));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("noviembre"), Is.EqualTo(Month.November));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("diciembre"), Is.EqualTo(Month.December));
+            Assert.Throws<InvalidOperationException>(() => SpanishMonthTranslator.CreateMonthFromSpanishName("someText"));
         }
 
         [Test]
-        public void GetTranslationLowerCase()
+        public void CreateMonthFromSpanishName_UpperCaseMonthNames_MonthCreatedProperly()
         {
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.January), Is.EqualTo("enero"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.February), Is.EqualTo("febrero"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.March), Is.EqualTo("marzo"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.April), Is.EqualTo("abril"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.May), Is.EqualTo("mayo"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.June), Is.EqualTo("junio"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.July), Is.EqualTo("julio"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.August), Is.EqualTo("agosto"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.September), Is.EqualTo("septiembre"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.October), Is.EqualTo("octubre"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.November), Is.EqualTo("noviembre"));
-            Assert.That(SpanishMonthTranslator.GetTranslationLowerCase(Month.December), Is.EqualTo("diciembre"));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Enero"), Is.EqualTo(Month.January));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Febrero"), Is.EqualTo(Month.February));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Marzo"), Is.EqualTo(Month.March));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Abril"), Is.EqualTo(Month.April));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Mayo"), Is.EqualTo(Month.May));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Junio"), Is.EqualTo(Month.June));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Julio"), Is.EqualTo(Month.July));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Agosto"), Is.EqualTo(Month.August));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Septiembre"), Is.EqualTo(Month.September));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Octubre"), Is.EqualTo(Month.October));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Noviembre"), Is.EqualTo(Month.November));
+            Assert.That(SpanishMonthTranslator.CreateMonthFromSpanishName("Diciembre"), Is.EqualTo(Month.December));
         }
     }
 }

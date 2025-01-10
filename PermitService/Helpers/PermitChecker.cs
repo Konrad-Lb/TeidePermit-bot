@@ -10,19 +10,37 @@ namespace PermitService.Helpers
 {
     public class PermitChecker(IWebDriver webDriver)
     {
-        private Month _currentMonth;
         private HtmlDocument? _htmlDocumemt;
-        
-        public IDictionary<Month,List<int>> GetAvailableDays(Month month)
+
+        public IDictionary<Month, List<int>> GetAvailableDays(List<Month> months)
         {
-            _currentMonth = month;
-            
             ClickNextStepLink();
 
+            var result = new Dictionary<Month, List<int>>();
+            
+            for(int i = 0; i < months.Count; i++)
+            {
+                if (i > 0)
+                    ClickNectMonthLink();
+                
+                LoadHtmlDocument();
+
+                var displayedMonth = GetCurrenlyDisplayedMonth();
+                if (months.Any(month => month == displayedMonth))
+                {
+                    var availableDays = GetAvailableDaysForCurrentlyDisplayedMonth();
+                    if (availableDays.Count > 0)
+                        result[displayedMonth] = availableDays;
+                }
+            }
+
+            return result;
+        }
+
+        private void LoadHtmlDocument()
+        {
             _htmlDocumemt = new HtmlDocument();
             _htmlDocumemt.LoadHtml(webDriver.PageSource);
-
-            return GetPermits();
         }
 
         private void ClickNextStepLink()
@@ -31,13 +49,26 @@ namespace PermitService.Helpers
             nextStepLink.Click();
         }
 
-        private bool PermitsForMonthShouldBeChecked()
+        private void ClickNectMonthLink()
         {
-            var tdMessesCollection = _htmlDocumemt?.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']");
-            return tdMessesCollection != null && tdMessesCollection.First().InnerHtml.Contains(SpanishMonthTranslator.GetTranslationLowerCase(_currentMonth));
+            var nextMonthLink = webDriver.FindElement(By.CssSelector("a[title='Ir al mes siguiente.']"));
+            nextMonthLink.Click();
         }
 
-        private List<int> GetAvailableDaysForMonth()
+        private Month GetCurrenlyDisplayedMonth()
+        {
+            var tdMessesCollection = _htmlDocumemt?.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']");
+            if (tdMessesCollection != null)
+            {
+                var displayedMonthWithYear = tdMessesCollection.First().InnerHtml;
+                var displayedMonthText = displayedMonthWithYear[0..displayedMonthWithYear.IndexOf(' ')];
+                return SpanishMonthTranslator.CreateMonthFromSpanishName(displayedMonthText);
+            }
+
+            throw new InvalidOperationException("Cannot get currently displayed month. Website seems to have incorrect format.");
+        }
+
+        private List<int> GetAvailableDaysForCurrentlyDisplayedMonth()
         {
             var result = new List<int>();
             var tdDiasCollection = _htmlDocumemt?.DocumentNode.SelectNodes("//td[@class=\"dias\"]");
@@ -61,17 +92,6 @@ namespace PermitService.Helpers
             return null;
         }
 
-        private IDictionary<Month, List<int>> GetPermits()
-        {
-            var result = new Dictionary<Month, List<int>>();
-            if (PermitsForMonthShouldBeChecked())
-            {
-                var availableDays = GetAvailableDaysForMonth();
-                if (availableDays.Count > 0)
-                    result[_currentMonth] = availableDays;
-            }
-
-            return result;
-        }
+       
     }
 }
