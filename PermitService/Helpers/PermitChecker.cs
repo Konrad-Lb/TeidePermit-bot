@@ -39,16 +39,25 @@ namespace PermitService.Helpers
             return result;
         }
 
+        private void ClickNextStepLink()
+        {
+            try
+            {
+                var nextStepLink = webDriver.FindElement(By.Id("Button1"));
+                nextStepLink.Click();
+            }
+            catch(WebDriverException e)
+            {
+                throw new InvalidOperationException("Permit website has invalid html content. Cannot click on the 'Next Step >>'. For more details see inner exception", e);
+            }
+
+            
+        }
+
         private void LoadCurrentPageContent()
         {
             _htmlDocumemt = new HtmlDocument();
             _htmlDocumemt.LoadHtml(webDriver.PageSource);
-        }
-
-        private void ClickNextStepLink()
-        {
-            var nextStepLink = webDriver.FindElement(By.Id("Button1"));
-            nextStepLink.Click();
         }
 
         private void ClickNextMonthIfAnyMonthToCheckLeft(List<Month> monthsToCheck)
