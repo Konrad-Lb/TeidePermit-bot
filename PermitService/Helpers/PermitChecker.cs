@@ -11,33 +11,35 @@ namespace PermitService.Helpers
     public class PermitChecker(IWebDriver webDriver)
     {
         private HtmlDocument? _htmlDocumemt;
+        private const int MAX_NEXT_MONTHS_CHECK = 11;
 
-        public IDictionary<Month, List<int>> GetAvailableDays(List<Month> months)
+        public IDictionary<Month, List<int>> GetAvailableDays(List<Month> monthsToCheck)
         {
             ClickNextStepLink();
 
             var result = new Dictionary<Month, List<int>>();
-            
-            for(int i = 0; i < months.Count; i++)
+
+            for(int i = 0; i < MAX_NEXT_MONTHS_CHECK && monthsToCheck.Count > 0 ; i++)
             {
-                if (i > 0)
-                    ClickNectMonthLink();
-                
-                LoadHtmlDocument();
+                LoadCurrentPageContent();
 
                 var displayedMonth = GetCurrenlyDisplayedMonth();
-                if (months.Any(month => month == displayedMonth))
+                if (monthsToCheck.Any(month => month == displayedMonth))
                 {
                     var availableDays = GetAvailableDaysForCurrentlyDisplayedMonth();
                     if (availableDays.Count > 0)
                         result[displayedMonth] = availableDays;
+                    
+                    monthsToCheck.Remove(displayedMonth);
                 }
+
+                ClickNextMonthIfAnyMonthToCheckLeft(monthsToCheck);
             }
 
             return result;
         }
 
-        private void LoadHtmlDocument()
+        private void LoadCurrentPageContent()
         {
             _htmlDocumemt = new HtmlDocument();
             _htmlDocumemt.LoadHtml(webDriver.PageSource);
@@ -49,7 +51,13 @@ namespace PermitService.Helpers
             nextStepLink.Click();
         }
 
-        private void ClickNectMonthLink()
+        private void ClickNextMonthIfAnyMonthToCheckLeft(List<Month> monthsToCheck)
+        {
+            if (monthsToCheck.Count > 0)
+                ClickNextMonthLink();
+        }
+
+        private void ClickNextMonthLink()
         {
             var nextMonthLink = webDriver.FindElement(By.CssSelector("a[title='Ir al mes siguiente.']"));
             nextMonthLink.Click();

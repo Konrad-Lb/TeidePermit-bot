@@ -97,14 +97,12 @@ namespace PermitServiceTest.Helpers
 
             var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.February]);
 
-            _nextMonthLinkMock.Verify(x => x.Click(), Times.Never);
             Assert.That(availableDays.Count, Is.EqualTo(0));
         }
 
         [Test]
         public void GetAvailableDays_CheckMultipleMonths_DictionaryFilledProperly()
         {
-
             _webDriverMock.SetupSequence(x => x.PageSource)
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "WhiteSmoke"); })
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("mayo", "Gray", "Gray"); })
@@ -112,12 +110,35 @@ namespace PermitServiceTest.Helpers
 
             var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.August, Month.May, Month.January]);
 
-            _nextMonthLinkMock.Verify(x => x.Click(), Times.Exactly(2));
             Assert.That(availableDays.Count, Is.EqualTo(2));
             Assert.That(availableDays[Month.January].Count, Is.EqualTo(1));
             Assert.That(availableDays[Month.January].First, Is.EqualTo(6));
             Assert.That(availableDays[Month.August].Count, Is.EqualTo(2));
             Assert.That(availableDays[Month.August], Is.EqualTo([5, 6]));
+        }
+
+        [Test]
+        public void GetAvailableDays_AllMonthsHasBeenChecked_NextMonthClickedTwoTimes()
+        {
+            _webDriverMock.SetupSequence(x => x.PageSource)
+                 .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "Black"); })
+                 .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("mayo", "Gray", "Gray"); })
+                 .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("agosto", "Black", "Black"); });
+
+            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.August, Month.January]);
+
+            _nextMonthLinkMock.Verify(x => x.Click(), Times.Exactly(2));
+        }
+
+        [Test]
+        public void GetAvailableDays_RequiredMonthNotFoundOnTheWebsite_ElevenNextMonthsChecked()
+        {
+            _webDriverMock.Setup(x => x.PageSource).Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "Black"); });
+
+            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.May]);
+
+            _nextMonthLinkMock.Verify(x => x.Click(), Times.Exactly(11));
+
         }
 
         private string GenerateHtmlTwoDaysMonthCallendar(string monthName, string firstDayColorName, string secondDayColorName)
@@ -152,7 +173,6 @@ namespace PermitServiceTest.Helpers
         //webelement Button1 not foound
         //test wait.Until
         //tes calendar script failed
-        //no available days for 12 months
         //one day available - others are not available
         //current month detection on website
         //no page content
