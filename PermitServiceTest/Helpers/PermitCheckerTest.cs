@@ -151,6 +151,25 @@ namespace PermitServiceTest.Helpers
             Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
         }
 
+        [Test]
+        public void GetAvailableDays_MissingCurrentDayInCallendar_ThrowInvalidOperationException()
+        {
+            var currMonthCallendar = new StringBuilder();
+            currMonthCallendar.Append("<html><table><tbody>");
+            currMonthCallendar.Append(" <tr>");
+            currMonthCallendar.Append("     <td class='dias' style='background-color:WhiteSmoke;'>");
+            currMonthCallendar.Append("         <a href='' style='color:Black' title='5 de mayo'>5</a>");
+            currMonthCallendar.Append("     </td>");
+            currMonthCallendar.Append(" </tr>");
+            currMonthCallendar.Append("</tbody></table></html>");
+
+            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+
+            var availableDays = new PermitChecker(_webDriverMock.Object);
+
+            Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+        }
+
         private string GenerateHtmlTwoDaysMonthCallendar(string monthName, string firstDayColorName, string secondDayColorName)
         {
             var montCalendar = new StringBuilder();
