@@ -72,33 +72,27 @@ namespace PermitService.Helpers
 
         private Month GetCurrenlyDisplayedMonth()
         {
-            var tdMessesCollection = _htmlDocumemt.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']");
-            if (tdMessesCollection != null)
-            {
-                var displayedMonthWithYear = tdMessesCollection.First().InnerHtml;
-                var displayedMonthText = displayedMonthWithYear[0..displayedMonthWithYear.IndexOf(' ')];
-                return SpanishMonthTranslator.CreateMonthFromSpanishName(displayedMonthText);
-            }
-
-            throw new InvalidOperationException("Cannot get currently displayed month name. Website seems to have incorrect format.");
+            var tdMessesCollection = _htmlDocumemt.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']") ??
+                throw new InvalidOperationException("Cannot get currently displayed month name. Website seems to have incorrect format.");
+            
+            var displayedMonthWithYear = tdMessesCollection.First().InnerHtml;
+            var displayedMonthText = displayedMonthWithYear[0..displayedMonthWithYear.IndexOf(' ')];
+            return SpanishMonthTranslator.CreateMonthFromSpanishName(displayedMonthText);
         }
 
         private List<int> GetAvailableDaysForCurrentlyDisplayedMonth()
         {
             var result = new List<int>();
-            var tdDiasCollection = _htmlDocumemt.DocumentNode.SelectNodes("//td[@class=\"dias\"]");
-            if (tdDiasCollection != null)
-            {
-                foreach (var td in tdDiasCollection)
-                {
-                    var dayNumber = GetDayNumberIfPermitAvailable(td);
-                    if (dayNumber.HasValue)
-                        result.Add(dayNumber.Value);
-                }
-                return result;
-            }
+            var tdDiasCollection = _htmlDocumemt.DocumentNode.SelectNodes("//td[@class=\"dias\"]") ??
+                throw new InvalidOperationException("Cannot get information about days in website callendar. Website seems to have incorrect format.");
 
-            throw new InvalidOperationException("Cannot get information about days in website callendar. Website seems to have incorrect format.");
+            foreach (var td in tdDiasCollection)
+            {
+                var dayNumber = GetDayNumberIfPermitAvailable(td);
+                if (dayNumber.HasValue)
+                    result.Add(dayNumber.Value);
+            }
+            return result;
         }
 
         private static int? GetDayNumberIfPermitAvailable(HtmlNode callendarDayCell)
