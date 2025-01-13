@@ -14,31 +14,24 @@ namespace PermitServiceTest.Sources
     [TestFixture]
     public class PermitCheckerTest
     {
-        private Mock<IWebDriver> _webDriverMock = null!;
-        private Mock<IWebElement> _nextStepLinkMock = null!;
-        private Mock<IWebElement> _nextMonthLinkMock = null!;
+        private Mock<ITeideWebPageClawler> _webPageCrawlerMock = null!;
 
         [SetUp]
         public void TestSetUp()
         {
-            _webDriverMock = new Mock<IWebDriver>();
-            _nextStepLinkMock = new Mock<IWebElement>();
-            _webDriverMock.Setup(x => x.FindElement(By.Id("Button1"))).Returns(_nextStepLinkMock.Object);
-
-            _nextMonthLinkMock = new Mock<IWebElement>();
-            _webDriverMock.Setup(x => x.FindElement(By.CssSelector("a[title='Ir al mes siguiente.']"))).Returns(_nextMonthLinkMock.Object);
+            _webPageCrawlerMock = new Mock<ITeideWebPageClawler>();
         }
 
         [Test]
         public void GetAvailableDays_NoAvailableDays_DictionaryIsEmpty()
         {
             var currMonthCallendar = GenerateHtmlTwoDaysMonthCallendar("mayo", "Gray", "Black");
-            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.May]);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object).GetAvailableDays([Month.May]);
 
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
-            _nextMonthLinkMock.Verify(x => x.Click(), Times.Never);
+            _webPageCrawlerMock.Verify(x => x.ClickNextStepLink(), Times.Once);
+            _webPageCrawlerMock.Verify(x => x.ClickNextMonthLink(), Times.Never);
             Assert.That(availableDays.Count, Is.EqualTo(0));
         }
 
@@ -62,12 +55,12 @@ namespace PermitServiceTest.Sources
             currMonthCallendar.Append(" </tbody>");
             currMonthCallendar.Append("</tbody></table></html>");
 
-            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.May]);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object).GetAvailableDays([Month.May]);
 
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
-            _nextMonthLinkMock.Verify(x => x.Click(), Times.Never);
+            _webPageCrawlerMock.Verify(x => x.ClickNextStepLink(), Times.Once);
+            _webPageCrawlerMock.Verify(x => x.ClickNextMonthLink(), Times.Never);
             Assert.That(availableDays.ContainsKey(Month.May), Is.True);
             Assert.That(availableDays[Month.May].Count, Is.EqualTo(1));
             Assert.That(availableDays[Month.May].First, Is.EqualTo(dayNumber));
@@ -91,12 +84,12 @@ namespace PermitServiceTest.Sources
             currMonthCallendar.Append(" </tbody>");
             currMonthCallendar.Append("</tbody></table></html>");
 
-            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.May]);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object).GetAvailableDays([Month.May]);
 
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
-            _nextMonthLinkMock.Verify(x => x.Click(), Times.Never);
+            _webPageCrawlerMock.Verify(x => x.ClickNextStepLink(), Times.Once);
+            _webPageCrawlerMock.Verify(x => x.ClickNextMonthLink(), Times.Never);
             Assert.That(availableDays.ContainsKey(Month.May), Is.True);
             Assert.That(availableDays[Month.May].Count, Is.EqualTo(1));
             Assert.That(availableDays[Month.May].First, Is.EqualTo(5));
@@ -120,25 +113,25 @@ namespace PermitServiceTest.Sources
             currMonthCallendar.Append(" </tr>");
             currMonthCallendar.Append("</tbody></table></html>");
 
-            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.February]);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object).GetAvailableDays([Month.February]);
 
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
+            _webPageCrawlerMock.Verify(x => x.ClickNextStepLink(), Times.Once);
             Assert.That(availableDays.Count, Is.EqualTo(0));
         }
 
         [Test]
         public void GetAvailableDays_CheckUniqueMultipleMonths_DictionaryFilledProperly()
         {
-            _webDriverMock.SetupSequence(x => x.PageSource)
+            _webPageCrawlerMock.SetupSequence(x => x.PageSource)
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "WhiteSmoke"); })
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("mayo", "Gray", "Gray"); })
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("agosto", "WhiteSmoke", "WhiteSmoke"); });
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.August, Month.May, Month.January]);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object).GetAvailableDays([Month.August, Month.May, Month.January]);
 
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
+            _webPageCrawlerMock.Verify(x => x.ClickNextStepLink(), Times.Once);
             Assert.That(availableDays.Count, Is.EqualTo(2));
             Assert.That(availableDays[Month.January].Count, Is.EqualTo(1));
             Assert.That(availableDays[Month.January].First, Is.EqualTo(6));
@@ -149,14 +142,14 @@ namespace PermitServiceTest.Sources
         [Test]
         public void GetAvailableDays_MonthsToCheckAreNotUnique_DictionaryFilledProperly()
         {
-            _webDriverMock.SetupSequence(x => x.PageSource)
+            _webPageCrawlerMock.SetupSequence(x => x.PageSource)
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "WhiteSmoke"); })
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("mayo", "Gray", "Gray"); })
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("agosto", "WhiteSmoke", "WhiteSmoke"); });
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.August, Month.January, Month.May, Month.August, Month.January]);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object).GetAvailableDays([Month.August, Month.January, Month.May, Month.August, Month.January]);
 
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
+            _webPageCrawlerMock.Verify(x => x.ClickNextStepLink(), Times.Once);
             Assert.That(availableDays.Count, Is.EqualTo(2));
             Assert.That(availableDays[Month.January].Count, Is.EqualTo(1));
             Assert.That(availableDays[Month.January].First, Is.EqualTo(6));
@@ -167,12 +160,12 @@ namespace PermitServiceTest.Sources
         [Test]
         public void GetAvailableDays_RequiredMonthNotFoundOnTheWebsite_ElevenNextMonthsChecked()
         {
-            _webDriverMock.Setup(x => x.PageSource).Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "Black"); });
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "Black"); });
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.May]);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object).GetAvailableDays([Month.May]);
 
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
-            _nextMonthLinkMock.Verify(x => x.Click(), Times.Exactly(11));
+            _webPageCrawlerMock.Verify(x => x.ClickNextStepLink(), Times.Once);
+            _webPageCrawlerMock.Verify(x => x.ClickNextMonthLink(), Times.Exactly(11));
         }
 
         private string GenerateHtmlTwoDaysMonthCallendar(string monthName, string firstDayColorName, string secondDayColorName)
@@ -200,19 +193,6 @@ namespace PermitServiceTest.Sources
         }
 
         [Test]
-        public void GetAvailableDays_CannotClickOnTheNextStepLink_ThrowInvalidOperationException()
-        {
-            _webDriverMock.Setup(x => x.FindElement(By.Id("Button1"))).Throws<NoSuchElementException>();
-
-            var availableDays = new PermitChecker(_webDriverMock.Object);
-
-            _nextStepLinkMock.Verify(x => x.Click(), Times.Never);
-            var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
-            Assert.That(exception?.Message, Is.EqualTo("Permit website has invalid html content. Cannot click on the 'Next Step >>'. For more details see inner exception"));
-            Assert.That(exception?.InnerException, Is.TypeOf<NoSuchElementException>());
-        }
-
-        [Test]
         public void GetAvailableDays_MissingMonthNameInCallendar_ThrowInvalidOperationException()
         {
             var currMonthCallendar = new StringBuilder();
@@ -224,9 +204,9 @@ namespace PermitServiceTest.Sources
             currMonthCallendar.Append(" </tr>");
             currMonthCallendar.Append("</tbody></table></html>");
 
-            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
 
-            var availableDays = new PermitChecker(_webDriverMock.Object);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object);
 
             var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
             Assert.That(exception?.Message, Is.EqualTo("Cannot get currently displayed month name. Website seems to have incorrect format."));
@@ -244,9 +224,9 @@ namespace PermitServiceTest.Sources
             currMonthCallendar.Append(" </tr>");
             currMonthCallendar.Append("</tbody></table></html>");
 
-            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
 
-            var availableDays = new PermitChecker(_webDriverMock.Object);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object);
 
             var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
             Assert.That(exception?.Message, Is.EqualTo("Cannot get information about days in website callendar. Website seems to have incorrect format."));
@@ -269,10 +249,10 @@ namespace PermitServiceTest.Sources
             currMonthCallendar.Append(" </tr>");
             currMonthCallendar.Append(" </tbody>");
             currMonthCallendar.Append("</tbody></table></html>");
-            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+            _webPageCrawlerMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
 
 
-            var availableDays = new PermitChecker(_webDriverMock.Object);
+            var availableDays = new PermitChecker(_webPageCrawlerMock.Object);
 
             var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
             Assert.That(exception?.Message, Is.EqualTo("Cannot get the day background color style from the website. Website seems to have incorrect style format."));

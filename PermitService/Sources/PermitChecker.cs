@@ -4,19 +4,19 @@ using OpenQA.Selenium.DevTools.V129.HeapProfiler;
 using OpenQA.Selenium.DevTools.V129.Input;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
-using PermitService.Helpers;
+using PermitService.Sources;
 using System.Diagnostics.Eventing.Reader;
 
-namespace PermitService.Sources
+namespace PermitService.Helpers
 {
-    public class PermitChecker(IWebDriver webDriver)
+    public class PermitChecker(ITeideWebPageClawler webPageCrawler)
     {
         private HtmlDocument _htmlDocumemt = new HtmlDocument();
         private const int MAX_NEXT_MONTHS_CHECK = 11;
 
         public IDictionary<Month, List<int>> GetAvailableDays(List<Month> monthsToCheck)
         {
-            ClickNextStepLink();
+            webPageCrawler.ClickNextStepLink();
 
             var distinctMonthsToCheck = monthsToCheck.Distinct().ToList();
             return GetAvailableDaysForDistinctMonths(distinctMonthsToCheck);
@@ -28,7 +28,7 @@ namespace PermitService.Sources
 
             for (int i = 0; i < MAX_NEXT_MONTHS_CHECK && distinctMonthsToCheck.Count > 0; i++)
             {
-                _htmlDocumemt.LoadHtml(webDriver.PageSource);
+                _htmlDocumemt.LoadHtml(webPageCrawler.PageSource);
 
                 var displayedMonth = GetCurrenlyDisplayedMonth();
                 if (distinctMonthsToCheck.Any(month => month == displayedMonth))
@@ -46,36 +46,17 @@ namespace PermitService.Sources
             return result;
         }
 
-        private void ClickNextStepLink()
-        {
-            try
-            {
-                var nextStepLink = webDriver.FindElement(By.Id("Button1"));
-                nextStepLink.Click();
-            }
-            catch (WebDriverException e)
-            {
-                throw new InvalidOperationException("Permit website has invalid html content. Cannot click on the 'Next Step >>'. For more details see inner exception", e);
-            }
-        }
-
         private void ClickNextMonthIfAnyMonthToCheckLeft(List<Month> monthsToCheck)
         {
             if (monthsToCheck.Count > 0)
-                ClickNextMonthLink();
-        }
-
-        private void ClickNextMonthLink()
-        {
-            var nextMonthLink = webDriver.FindElement(By.CssSelector("a[title='Ir al mes siguiente.']"));
-            nextMonthLink.Click();
+                webPageCrawler.ClickNextMonthLink();
         }
 
         private Month GetCurrenlyDisplayedMonth()
         {
             var tdMessesCollection = _htmlDocumemt.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']") ??
                 throw new InvalidOperationException("Cannot get currently displayed month name. Website seems to have incorrect format.");
-
+            
             var displayedMonthWithYear = tdMessesCollection.First().InnerHtml;
             var displayedMonthText = displayedMonthWithYear[0..displayedMonthWithYear.IndexOf(' ')];
             return SpanishMonthTranslator.CreateMonthFromSpanishName(displayedMonthText);
@@ -102,7 +83,7 @@ namespace PermitService.Sources
                 throw new InvalidOperationException("Cannot get the day background color style from the website. Website seems to have incorrect style format.");
 
             if (styleAttribute.Value.Contains("WhiteSmoke"))
-                return int.Parse(callendarDayCell.ChildNodes.Where(x => x.Name == "a").First().InnerText);
+                return Int32.Parse(callendarDayCell.ChildNodes.Where(x => x.Name == "a").First().InnerText);
 
             return null;
         }
