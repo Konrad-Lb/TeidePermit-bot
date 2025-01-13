@@ -174,6 +174,30 @@ namespace PermitServiceTest.Helpers
             _nextMonthLinkMock.Verify(x => x.Click(), Times.Exactly(11));
         }
 
+        private string GenerateHtmlTwoDaysMonthCallendar(string monthName, string firstDayColorName, string secondDayColorName)
+        {
+            var montCalendar = new StringBuilder();
+            montCalendar.Append("<html><table><tbody>");
+            montCalendar.Append(" <tr>");
+            montCalendar.Append("     <table class='messes'><tbody><tr>");
+            montCalendar.Append($"         <td align='center'>{monthName} de 2025</td>");
+            montCalendar.Append("     </tr></tbody></table>");
+            montCalendar.Append(" </tr>");
+            montCalendar.Append(" <tr>");
+            montCalendar.Append($"     <td class='dias' style='background-color:{firstDayColorName};'>");
+            montCalendar.Append($"         <a href='' style='color:Black' title='5 de {monthName}'>5</a>");
+            montCalendar.Append("     </td>");
+            montCalendar.Append(" </tr>");
+            montCalendar.Append(" <tr>");
+            montCalendar.Append($"     <td class='dias' style='background-color:{secondDayColorName};'>");
+            montCalendar.Append($"         <a href='' style='color:Black' title='6 de {monthName}'>6</a>");
+            montCalendar.Append("     </td>");
+            montCalendar.Append(" </tr>");
+            montCalendar.Append("</tbody></table></html>");
+
+            return montCalendar.ToString();
+        }
+
         [Test]
         public void GetAvailableDays_CannotClickOnTheNextStepLink_ThrowInvalidOperationException()
         {
@@ -182,7 +206,9 @@ namespace PermitServiceTest.Helpers
             var availableDays = new PermitChecker(_webDriverMock.Object);
 
             _nextStepLinkMock.Verify(x => x.Click(), Times.Never);
-            Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            Assert.That(exception?.Message, Is.EqualTo("Permit website has invalid html content. Cannot click on the 'Next Step >>'. For more details see inner exception"));
+            Assert.That(exception?.InnerException, Is.TypeOf<NoSuchElementException>());
         }
 
         [Test]
@@ -201,11 +227,12 @@ namespace PermitServiceTest.Helpers
 
             var availableDays = new PermitChecker(_webDriverMock.Object);
 
-            Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            Assert.That(exception?.Message, Is.EqualTo("Cannot get currently displayed month name. Website seems to have incorrect format."));
         }
 
         [Test]
-        public void GetAvailableDays_NoDaysinWebsiteCallendar_ThrowInvalidOperationException()
+        public void GetAvailableDays_NoDaysInWebsiteCallendar_ThrowInvalidOperationException()
         {
             var currMonthCallendar = new StringBuilder();
             currMonthCallendar.Append("<html><table><tbody>");
@@ -220,7 +247,8 @@ namespace PermitServiceTest.Helpers
 
             var availableDays = new PermitChecker(_webDriverMock.Object);
 
-            Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            Assert.That(exception?.Message, Is.EqualTo("Cannot get information about days in website callendar. Website seems to have incorrect format."));
         }
 
         [Test]
@@ -245,31 +273,10 @@ namespace PermitServiceTest.Helpers
 
             var availableDays = new PermitChecker(_webDriverMock.Object);
 
-            Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            var exception = Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+            Assert.That(exception?.Message, Is.EqualTo("Cannot get the day background color style from the website. Website seems to have incorrect style format."));
         }
 
-        private string GenerateHtmlTwoDaysMonthCallendar(string monthName, string firstDayColorName, string secondDayColorName)
-        {
-            var montCalendar = new StringBuilder();
-            montCalendar.Append("<html><table><tbody>");
-            montCalendar.Append(" <tr>");
-            montCalendar.Append("     <table class='messes'><tbody><tr>");
-            montCalendar.Append($"         <td align='center'>{monthName} de 2025</td>");
-            montCalendar.Append("     </tr></tbody></table>");
-            montCalendar.Append(" </tr>");
-            montCalendar.Append(" <tr>");
-            montCalendar.Append($"     <td class='dias' style='background-color:{firstDayColorName};'>");
-            montCalendar.Append($"         <a href='' style='color:Black' title='5 de {monthName}'>5</a>");
-            montCalendar.Append("     </td>");
-            montCalendar.Append(" </tr>");
-            montCalendar.Append(" <tr>");
-            montCalendar.Append($"     <td class='dias' style='background-color:{secondDayColorName};'>");
-            montCalendar.Append($"         <a href='' style='color:Black' title='6 de {monthName}'>6</a>");
-            montCalendar.Append("     </td>");
-            montCalendar.Append(" </tr>");
-            montCalendar.Append("</tbody></table></html>");
-
-            return montCalendar.ToString();
-        }
+        
     }
 }
