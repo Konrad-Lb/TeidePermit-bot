@@ -72,6 +72,7 @@ namespace PermitServiceTest.Helpers
             Assert.That(availableDays[Month.May].First, Is.EqualTo(dayNumber));
         }
 
+
         [Test]
         public void GetAvailableDays_PermitIsAvailableButForDiffrentMonthThenExpected_DictionaryIsEmpty()
         {
@@ -98,7 +99,7 @@ namespace PermitServiceTest.Helpers
         }
 
         [Test]
-        public void GetAvailableDays_CheckMultipleMonths_DictionaryFilledProperly()
+        public void GetAvailableDays_CheckUniqueMultipleMonths_DictionaryFilledProperly()
         {
             _webDriverMock.SetupSequence(x => x.PageSource)
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "WhiteSmoke"); })
@@ -116,17 +117,21 @@ namespace PermitServiceTest.Helpers
         }
 
         [Test]
-        public void GetAvailableDays_AllMonthsHasBeenChecked_NextMonthClickedTwoTimes()
+        public void GetAvailableDays_MonthsToCheckAreNotUnique_DictionaryFilledProperly()
         {
             _webDriverMock.SetupSequence(x => x.PageSource)
-                 .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "Black"); })
+                 .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("enero", "Black", "WhiteSmoke"); })
                  .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("mayo", "Gray", "Gray"); })
-                 .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("agosto", "Black", "Black"); });
+                 .Returns(() => { return GenerateHtmlTwoDaysMonthCallendar("agosto", "WhiteSmoke", "WhiteSmoke"); });
 
-            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.August, Month.January]);
+            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.August, Month.January, Month.May, Month.August, Month.January]);
 
             _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
-            _nextMonthLinkMock.Verify(x => x.Click(), Times.Exactly(2));
+            Assert.That(availableDays.Count, Is.EqualTo(2));
+            Assert.That(availableDays[Month.January].Count, Is.EqualTo(1));
+            Assert.That(availableDays[Month.January].First, Is.EqualTo(6));
+            Assert.That(availableDays[Month.August].Count, Is.EqualTo(2));
+            Assert.That(availableDays[Month.August], Is.EqualTo([5, 6]));
         }
 
         [Test]
@@ -152,7 +157,7 @@ namespace PermitServiceTest.Helpers
         }
 
         [Test]
-        public void GetAvailableDays_MissingCurrentDayInCallendar_ThrowInvalidOperationException()
+        public void GetAvailableDays_MissingMonthNameInCallendar_ThrowInvalidOperationException()
         {
             var currMonthCallendar = new StringBuilder();
             currMonthCallendar.Append("<html><table><tbody>");
@@ -160,6 +165,25 @@ namespace PermitServiceTest.Helpers
             currMonthCallendar.Append("     <td class='dias' style='background-color:WhiteSmoke;'>");
             currMonthCallendar.Append("         <a href='' style='color:Black' title='5 de mayo'>5</a>");
             currMonthCallendar.Append("     </td>");
+            currMonthCallendar.Append(" </tr>");
+            currMonthCallendar.Append("</tbody></table></html>");
+
+            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+
+            var availableDays = new PermitChecker(_webDriverMock.Object);
+
+            Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+        }
+
+        [Test]
+        public void GetAvailableDays_NoDaysinWebsiteCallendar_ThrowInvalidOperationException()
+        {
+            var currMonthCallendar = new StringBuilder();
+            currMonthCallendar.Append("<html><table><tbody>");
+            currMonthCallendar.Append(" <tr>");
+            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
+            currMonthCallendar.Append("     </tr></tbody></table>");
             currMonthCallendar.Append(" </tr>");
             currMonthCallendar.Append("</tbody></table></html>");
 
@@ -198,12 +222,6 @@ namespace PermitServiceTest.Helpers
         //style vs bgcolor attribute
         //tes calendar script failed
         //one day available - others are not available
-        //no page content
-        //tdHtmlNode not found
-        //month cannot be checked td not found
-        //html document is null
-        //handle if months for checking are uniqe
-        //test handling "Cannot get currently displayed month. Website seems to have incorrect format."
 
     }
 }
