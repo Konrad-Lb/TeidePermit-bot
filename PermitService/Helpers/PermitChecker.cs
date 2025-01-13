@@ -98,18 +98,18 @@ namespace PermitService.Helpers
                 return result;
             }
 
-            throw new InvalidOperationException("Cannot get information about days in website calle. Website seems to have incorrect format.");
+            throw new InvalidOperationException("Cannot get information about days in website callendar. Website seems to have incorrect format.");
         }
 
         private static int? GetDayNumberIfPermitAvailable(HtmlNode callendarDayCell)
         {
-            var styleAttribute = callendarDayCell.Attributes["style"] ?? callendarDayCell.Attributes["bgcolor"];
-            if (styleAttribute.Value != null && styleAttribute.Value.Contains("WhiteSmoke"))
+            var styleAttribute = callendarDayCell.Attributes["style"] ?? callendarDayCell.Attributes["bgcolor"] ??
+                throw new InvalidOperationException("Cannot get the day background color style from the website. Website seems to have incorrect style format.");
+
+            if (styleAttribute.Value.Contains("WhiteSmoke"))
                 return Int32.Parse(callendarDayCell.ChildNodes.Where(x => x.Name == "a").First().InnerText);
-            
+
             return null;
         }
-
-       
     }
 }

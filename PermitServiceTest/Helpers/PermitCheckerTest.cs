@@ -72,6 +72,35 @@ namespace PermitServiceTest.Helpers
             Assert.That(availableDays[Month.May].First, Is.EqualTo(dayNumber));
         }
 
+        [Test]
+        public void GetAvailableDays_BgColorStyleInWebsiteIsSupported_DictionaryHasOneEntry()
+        {
+            var currMonthCallendar = new StringBuilder();
+            currMonthCallendar.Append("<html><table><tbody>");
+            currMonthCallendar.Append(" <tr>");
+            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
+            currMonthCallendar.Append("     </tr></tbody></table>");
+            currMonthCallendar.Append(" </tr>");
+            currMonthCallendar.Append(" <tr>");
+            currMonthCallendar.Append("     <td class='dias' bgcolor='WhiteSmoke'>");
+            currMonthCallendar.Append($"        <a href='' style='color:Black' title='5 de mayo'>5</a>");
+            currMonthCallendar.Append("     </td>");
+            currMonthCallendar.Append(" </tr>");
+            currMonthCallendar.Append(" </tbody>");
+            currMonthCallendar.Append("</tbody></table></html>");
+
+            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+
+            var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.May]);
+
+            _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
+            _nextMonthLinkMock.Verify(x => x.Click(), Times.Never);
+            Assert.That(availableDays.ContainsKey(Month.May), Is.True);
+            Assert.That(availableDays[Month.May].Count, Is.EqualTo(1));
+            Assert.That(availableDays[Month.May].First, Is.EqualTo(5));
+        }
+
 
         [Test]
         public void GetAvailableDays_PermitIsAvailableButForDiffrentMonthThenExpected_DictionaryIsEmpty()
@@ -194,6 +223,31 @@ namespace PermitServiceTest.Helpers
             Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
         }
 
+        [Test]
+        public void GetAvailableDays_NoColorStyleInWebsite_ThrowInvalidOperationExeption()
+        {
+            var currMonthCallendar = new StringBuilder();
+            currMonthCallendar.Append("<html><table><tbody>");
+            currMonthCallendar.Append(" <tr>");
+            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
+            currMonthCallendar.Append("     </tr></tbody></table>");
+            currMonthCallendar.Append(" </tr>");
+            currMonthCallendar.Append(" <tr>");
+            currMonthCallendar.Append("     <td class='dias'>");
+            currMonthCallendar.Append($"        <a href='' style='color:Black' title='5 de mayo'>5</a>");
+            currMonthCallendar.Append("     </td>");
+            currMonthCallendar.Append(" </tr>");
+            currMonthCallendar.Append(" </tbody>");
+            currMonthCallendar.Append("</tbody></table></html>");
+            _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
+
+
+            var availableDays = new PermitChecker(_webDriverMock.Object);
+
+            Assert.Throws<InvalidOperationException>(() => availableDays.GetAvailableDays([Month.May]));
+        }
+
         private string GenerateHtmlTwoDaysMonthCallendar(string monthName, string firstDayColorName, string secondDayColorName)
         {
             var montCalendar = new StringBuilder();
@@ -217,11 +271,5 @@ namespace PermitServiceTest.Helpers
 
             return montCalendar.ToString();
         }
-
-        //diffrent date single days available test
-        //style vs bgcolor attribute
-        //tes calendar script failed
-        //one day available - others are not available
-
     }
 }
