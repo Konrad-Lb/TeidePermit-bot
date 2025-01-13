@@ -2,13 +2,14 @@
 using NUnit.Framework;
 using OpenQA.Selenium;
 using PermitService.Helpers;
+using PermitService.Sources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PermitServiceTest.Helpers
+namespace PermitServiceTest.Sources
 {
     [TestFixture]
     public class PermitCheckerTest
@@ -62,12 +63,12 @@ namespace PermitServiceTest.Helpers
             currMonthCallendar.Append("</tbody></table></html>");
 
             _webDriverMock.Setup(x => x.PageSource).Returns(currMonthCallendar.ToString());
-            
+
             var availableDays = new PermitChecker(_webDriverMock.Object).GetAvailableDays([Month.May]);
 
             _nextStepLinkMock.Verify(x => x.Click(), Times.Once);
             _nextMonthLinkMock.Verify(x => x.Click(), Times.Never);
-            Assert.That(availableDays.ContainsKey(Month.May) , Is.True);
+            Assert.That(availableDays.ContainsKey(Month.May), Is.True);
             Assert.That(availableDays[Month.May].Count, Is.EqualTo(1));
             Assert.That(availableDays[Month.May].First, Is.EqualTo(dayNumber));
         }
@@ -277,6 +278,6 @@ namespace PermitServiceTest.Helpers
             Assert.That(exception?.Message, Is.EqualTo("Cannot get the day background color style from the website. Website seems to have incorrect style format."));
         }
 
-        
+
     }
 }

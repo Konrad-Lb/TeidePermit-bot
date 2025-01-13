@@ -4,9 +4,10 @@ using OpenQA.Selenium.DevTools.V129.HeapProfiler;
 using OpenQA.Selenium.DevTools.V129.Input;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
+using PermitService.Helpers;
 using System.Diagnostics.Eventing.Reader;
 
-namespace PermitService.Helpers
+namespace PermitService.Sources
 {
     public class PermitChecker(IWebDriver webDriver)
     {
@@ -52,7 +53,7 @@ namespace PermitService.Helpers
                 var nextStepLink = webDriver.FindElement(By.Id("Button1"));
                 nextStepLink.Click();
             }
-            catch(WebDriverException e)
+            catch (WebDriverException e)
             {
                 throw new InvalidOperationException("Permit website has invalid html content. Cannot click on the 'Next Step >>'. For more details see inner exception", e);
             }
@@ -74,7 +75,7 @@ namespace PermitService.Helpers
         {
             var tdMessesCollection = _htmlDocumemt.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']") ??
                 throw new InvalidOperationException("Cannot get currently displayed month name. Website seems to have incorrect format.");
-            
+
             var displayedMonthWithYear = tdMessesCollection.First().InnerHtml;
             var displayedMonthText = displayedMonthWithYear[0..displayedMonthWithYear.IndexOf(' ')];
             return SpanishMonthTranslator.CreateMonthFromSpanishName(displayedMonthText);
@@ -101,7 +102,7 @@ namespace PermitService.Helpers
                 throw new InvalidOperationException("Cannot get the day background color style from the website. Website seems to have incorrect style format.");
 
             if (styleAttribute.Value.Contains("WhiteSmoke"))
-                return Int32.Parse(callendarDayCell.ChildNodes.Where(x => x.Name == "a").First().InnerText);
+                return int.Parse(callendarDayCell.ChildNodes.Where(x => x.Name == "a").First().InnerText);
 
             return null;
         }
