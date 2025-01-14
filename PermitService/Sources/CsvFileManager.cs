@@ -7,11 +7,22 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class CsvFileManager()
+    public class CsvFileManager(IFileProvider fileProvider, char fieldDelimeter)
     {
-        public List<PermitRequestData> ReadInputData(string inputFilePath)
+        private readonly char _fieldDelimeter = fieldDelimeter;
+
+
+        public async Task<List<PermitRequestData>> ReadInputDataAsync(string inputFilePath)
         {
-            return new List<PermitRequestData>();
+            var result = new List<PermitRequestData>();
+            var inputFileData = await fileProvider.ReadLines(inputFilePath);
+            foreach(var inputDataLine in inputFileData)
+            {
+                var currentLine = inputDataLine;
+                result.Add(PermitRequestData.FromCsvString(currentLine,_fieldDelimeter));
+            }
+
+            return result;
         }
     }
 }
