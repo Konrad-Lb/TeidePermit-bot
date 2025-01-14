@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace PermitService.Helpers
 
         public static PermitRequestData FromCsvString(string csvString, char fieldDelimater)
         {
+            ThrowExceptionIfStringIsEmpty(csvString);
             RemoveLastCharIfStringEndsWithFieldDelimeter(ref csvString, fieldDelimater);
             
             return new PermitRequestData
@@ -22,6 +24,12 @@ namespace PermitService.Helpers
                 EndDate = ReadDateTime(ref csvString, fieldDelimater),
                 EmailAddress = csvString
             };
+        }
+
+        private static void ThrowExceptionIfStringIsEmpty(string csvString)
+        {
+            if (String.IsNullOrEmpty(csvString))
+                throw new InvalidOperationException("Cannot create PermitRequestData object from CSV string because CSV string is empty.");
         }
 
         private static void RemoveLastCharIfStringEndsWithFieldDelimeter(ref string csvString, char fieldDelimater)
@@ -33,10 +41,16 @@ namespace PermitService.Helpers
         private static DateTime ReadDateTime(ref string line, char fieldDelimeter)
         {
             int lastDelimIndex = GetDelimeterIndexOrThrowExceptionIfNotFound(line, fieldDelimeter);
-            var dateTime = DateTime.Parse(line[0..lastDelimIndex]);
-            line = line.Remove(0, lastDelimIndex + 1);
-
-            return dateTime;
+            try
+            {
+                var dateTime = DateTime.ParseExact(line[0..lastDelimIndex], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                line = line.Remove(0, lastDelimIndex + 1);
+                return dateTime;
+            }
+            catch(FormatException e)
+            {
+                throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string. CSV string contains not valid date time format {line[0..lastDelimIndex]}. Correct format is 'YYYY-MM-dd'");
+            }
         }
 
         private static int GetDelimeterIndexOrThrowExceptionIfNotFound(string csvString, char fieldDelimeter)
