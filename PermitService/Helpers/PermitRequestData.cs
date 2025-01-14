@@ -14,6 +14,8 @@ namespace PermitService.Helpers
 
         public static PermitRequestData FromCsvString(string csvString, char fieldDelimater)
         {
+            RemoveLastCharIfStringEndsWithFieldDelimeter(ref csvString, fieldDelimater);
+            
             return new PermitRequestData
             {
                 StartDate = ReadDateTime(ref csvString, fieldDelimater),
@@ -22,13 +24,28 @@ namespace PermitService.Helpers
             };
         }
 
+        private static void RemoveLastCharIfStringEndsWithFieldDelimeter(ref string csvString, char fieldDelimater)
+        {
+            if (csvString.Last() == fieldDelimater)
+                csvString = csvString.Remove(csvString.Length - 1, 1);
+        }
+
         private static DateTime ReadDateTime(ref string line, char fieldDelimeter)
         {
-            int lastDelimIndex = line.IndexOf(fieldDelimeter);
+            int lastDelimIndex = GetDelimeterIndexOrThrowExceptionIfNotFound(line, fieldDelimeter);
             var dateTime = DateTime.Parse(line[0..lastDelimIndex]);
             line = line.Remove(0, lastDelimIndex + 1);
 
             return dateTime;
+        }
+
+        private static int GetDelimeterIndexOrThrowExceptionIfNotFound(string csvString, char fieldDelimeter)
+        {
+            int delimIndex = csvString.IndexOf(fieldDelimeter);
+
+            if (delimIndex < 0)
+                throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string '{csvString}'. CSV string does not have expected delimeter '{fieldDelimeter}'.");
+            return delimIndex;
         }
     }
 }
