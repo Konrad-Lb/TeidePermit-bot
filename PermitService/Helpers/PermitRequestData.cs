@@ -22,7 +22,7 @@ namespace PermitService.Helpers
             {
                 StartDate = ReadDateTime(ref csvString, fieldDelimater),
                 EndDate = ReadDateTime(ref csvString, fieldDelimater),
-                EmailAddress = csvString
+                EmailAddress = ReadEmailAddress(ref csvString, fieldDelimater)
             };
         }
 
@@ -50,6 +50,19 @@ namespace PermitService.Helpers
             catch(FormatException e)
             {
                 throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string. CSV string contains not valid date time format {line[0..lastDelimIndex]}. Correct format is 'YYYY-MM-dd'");
+            }
+        }
+
+        private static string ReadEmailAddress(ref string line, char fieldDelimeter)
+        {
+            try
+            {
+                int lastDelimIndex = GetDelimeterIndexOrThrowExceptionIfNotFound(line, fieldDelimeter);
+                return line[0..lastDelimIndex];
+            }
+            catch(InvalidOperationException)
+            {
+                return line;
             }
         }
 
