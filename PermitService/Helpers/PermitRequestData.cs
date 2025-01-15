@@ -15,7 +15,7 @@ namespace PermitService.Helpers
 
         public static PermitRequestData FromCsvString(string csvString, char fieldDelimater)
         {
-            ThrowExceptionIfStringIsEmpty(csvString);
+            ThrowExceptionIfCsvStringIsEmpty(csvString);
             RemoveLastCharIfStringEndsWithFieldDelimeter(ref csvString, fieldDelimater);
             
             return new PermitRequestData
@@ -26,10 +26,9 @@ namespace PermitService.Helpers
             };
         }
 
-        private static void ThrowExceptionIfStringIsEmpty(string csvString)
+        private static void ThrowExceptionIfCsvStringIsEmpty(string csvString)
         {
-            if (String.IsNullOrEmpty(csvString))
-                throw new InvalidOperationException("Cannot create PermitRequestData object from CSV string because CSV string is empty.");
+            ThrowExceptionIfStringIsEmpty(csvString, "Cannot create PermitRequestData object from CSV string because CSV string is empty.");
         }
 
         private static void RemoveLastCharIfStringEndsWithFieldDelimeter(ref string csvString, char fieldDelimater)
@@ -47,9 +46,9 @@ namespace PermitService.Helpers
                 line = line.Remove(0, lastDelimIndex + 1);
                 return dateTime;
             }
-            catch(FormatException e)
+            catch(FormatException)
             {
-                throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string. CSV string contains not valid date time format {line[0..lastDelimIndex]}. Correct format is 'YYYY-MM-dd'");
+                throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string. CSV string contains not valid date time format '{line[0..lastDelimIndex]}'. Correct format is 'YYYY-MM-dd'");
             }
         }
 
@@ -62,8 +61,19 @@ namespace PermitService.Helpers
             }
             catch(InvalidOperationException)
             {
+                ThrowEcxeptionIfEmailAddressEmpty(line);
                 return line;
             }
+        }
+
+        private static void ThrowEcxeptionIfEmailAddressEmpty(string emaiAddress)
+        {
+            ThrowExceptionIfStringIsEmpty(emaiAddress, "Cannot create PermitRequestData object from CSV string. Email address field is empty.");
+        }
+        private static void ThrowExceptionIfStringIsEmpty(string text, string exceptionMessage)
+        {
+            if (String.IsNullOrEmpty(text))
+                throw new InvalidOperationException(exceptionMessage);
         }
 
         private static int GetDelimeterIndexOrThrowExceptionIfNotFound(string csvString, char fieldDelimeter)
@@ -71,7 +81,7 @@ namespace PermitService.Helpers
             int delimIndex = csvString.IndexOf(fieldDelimeter);
 
             if (delimIndex < 0)
-                throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string '{csvString}'. CSV string does not have expected delimeter '{fieldDelimeter}'.");
+                throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string. CSV string does not have expected delimeter '{fieldDelimeter}' or number of CSV fields less than three.");
             return delimIndex;
         }
     }

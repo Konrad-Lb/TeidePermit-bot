@@ -12,8 +12,8 @@ namespace PermitServiceTest.Helpers
     [TestFixture]
     public class PermitRequestDataTest
     {
-        [TestCase("2025-01-13;2025-03-15;user1@test.com", Description = "aaa")]
-        [TestCase("2025-01-13;2025-03-15;user1@test.com;", Description = "vvv")]
+        [TestCase("2025-01-13;2025-03-15;user1@test.com", Description = "FromCSVString_CsvStringEndedWithDelimeter_StringParsedCorrectly")]
+        [TestCase("2025-01-13;2025-03-15;user1@test.com;", Description = "FromCSVString_CsvStringEndedWithoutDelimeter_StringParsedCorrectly")]
         public void FromCSVString_PeroperCsvString_StringParsedCorrectly(string csvString)
         {
             var permitData = PermitRequestData.FromCsvString(csvString, ';');
@@ -23,14 +23,13 @@ namespace PermitServiceTest.Helpers
             Assert.That(permitData.EmailAddress, Is.EqualTo("user1@test.com"));
         }
 
-        [Test]
-        public void FromCSVString_WrongDelimeterCharacter_ThrowInvalidOperationException()
+        [TestCase("2025-01-13;2025-03-15;user@test.com", '$', Description = "FromCSVString_WrongDelimeterCharacter_ThrowInvalidOperationException")]
+        [TestCase("2025-01-13", ';', Description = "FromCSVString_MissingEndDateAndEmailAddress_ThrowInvalidOperationException")]
+        [TestCase("2025-01-13;2025-01-13", ';', Description = "FromCSVString_MissingEmailAddress_ThrowInvalidOperationException")]
+        public void FromCSVString_WrongCsvString_ThrowInvalidOperationException(string csvString, char fieldDelimeter)
         {
-            var csvString = "2025-01-13;2025-03-15;user@test.com";
-            var fieldDelimeter = '$';
-
             var exception = Assert.Throws<InvalidOperationException>(() => PermitRequestData.FromCsvString(csvString, fieldDelimeter));
-            Assert.That(exception?.Message, Is.EqualTo($"Cannot create PermitRequestData object from CSV string '{csvString}'. CSV string does not have expected delimeter '{fieldDelimeter}'."));
+            Assert.That(exception?.Message, Is.EqualTo($"Cannot create PermitRequestData object from CSV string. CSV string does not have expected delimeter '{fieldDelimeter}' or number of CSV fields less than three."));
         }
 
         [Test]
@@ -40,15 +39,16 @@ namespace PermitServiceTest.Helpers
             Assert.That(exception?.Message, Is.EqualTo("Cannot create PermitRequestData object from CSV string because CSV string is empty."));
         }
 
-        [TestCase("date1", "date2", "date1", Description = "FromCSVString_WrongStartAndEndDateFormat_ThrowsInvalidOperationException")]
-        [TestCase("2023-01-01", "date2", "date2", Description = "FromCSVString_WrongEndDateFormat_ThrowsInvalidOperationException")]
-        public void FromCSVString_WrongDateValues_ThrowInvalidOprationException(string date1, string date2, string expectedStr)
+        [TestCase("date1", "date2", "user@test.com", "date1", Description = "FromCSVString_WrongStartAndEndDateFormat_ThrowsInvalidOperationException")]
+        [TestCase("2023-01-01", "date2", "user@test.com", "date2", Description = "FromCSVString_WrongEndDateFormat_ThrowsInvalidOperationException")]
+        [TestCase("", "", "", "", Description = "FromCSVString_EmpyFields_ThrowsInvalidOperationException")]
+        public void FromCSVString_WrongDateValues_ThrowInvalidOprationException(string date1, string date2, string emailAddress, string expectedStr)
         {
-            var csvString = $"{date1};{date2};user@test.com";
+            var csvString = $"{date1};{date2};{emailAddress}";
             var fieldDelimeter = ';';
 
             var exception = Assert.Throws<InvalidOperationException>(() => PermitRequestData.FromCsvString(csvString, fieldDelimeter));
-            Assert.That(exception?.Message, Is.EqualTo($"Cannot create PermitRequestData object from CSV string. CSV string contains not valid date time format {expectedStr}. Correct format is 'YYYY-MM-dd'"));
+            Assert.That(exception?.Message, Is.EqualTo($"Cannot create PermitRequestData object from CSV string. CSV string contains not valid date time format '{expectedStr}'. Correct format is 'YYYY-MM-dd'"));
         }
 
         [Test]
@@ -64,9 +64,14 @@ namespace PermitServiceTest.Helpers
             Assert.That(permitData.EmailAddress, Is.EqualTo("user@test.com"));
         }
 
-        //invalid number of fields
-        //sasa;dsasd;vxcxvxc;
-        //;;;
-        //<date>;<date>;;
+        [Test]
+        public void FromCSVString_EmptyEmailAddress_ThrowInvalidOperationException()
+        {
+            var csvString = "2025-01-13;2025-03-15;;";
+            var fieldDelimeter = ';';
+
+            var exception = Assert.Throws<InvalidOperationException>(() => PermitRequestData.FromCsvString(csvString, fieldDelimeter));
+            Assert.That(exception?.Message, Is.EqualTo($"Cannot create PermitRequestData object from CSV string. Email address field is empty."));
+        }
     }
 }
