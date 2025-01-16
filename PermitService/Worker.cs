@@ -9,11 +9,10 @@ using System.Reflection;
 
 namespace PermitService
 {
-    public class Worker(ILog log4netLogger, IOptions<AppSettings> appSettings) : BackgroundService
+    public class Worker(ILog4NetAdapter logger, IOptions<AppSettings> appSettings) : BackgroundService
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-         
             
             while (!stoppingToken.IsCancellationRequested)
             {
