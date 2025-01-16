@@ -99,10 +99,33 @@ namespace PermitServiceTest.Sources
             _logger.Verify(x => x.Warning("Input file cannot be opened or removed. Data in this file will be not consumed."));
             Assert.That(result.Count, Is.EqualTo(0));
         }
+
+        [Test]
+        public async Task ReadInputData_ForUser2StartDateIsBiggerThanEndDate_WrongEntryIsNotReturned()
+        {
+            _fileProviderMock = new Mock<IFileProvider>();
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync([
+                "2025-01-13;2025-01-13;user1@test.com",
+                "2025-12-31;2025-04-18;user2@test.com",
+                "2025-01-02;2025-08-31;user3@test.com"]);
+
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var result = (await fileManager.ReadInputDataAsync("input.csv")).ToList();
+
+            _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
+            _logger.Verify(x => x.Warning($"Entry in input file {{StartDate = 2025-12-31, EndDate = 2025-04-18 EmailAddress = user2@test.com}} has bigger StartDate then EndDate. It will be ignored"));
+            Assert.That(result.Count, Is.EqualTo(2));
+            Assert.That(result[0].StartDate, Is.EqualTo(new DateTime(2025, 1, 13)));
+            Assert.That(result[0].EndDate, Is.EqualTo(new DateTime(2025, 1, 13)));
+            Assert.That(result[0].EmailAddress, Is.EqualTo("user1@test.com"));
+            Assert.That(result[1].StartDate, Is.EqualTo(new DateTime(2025, 1, 2)));
+            Assert.That(result[1].EndDate, Is.EqualTo(new DateTime(2025, 8, 31)));
+            Assert.That(result[1].EmailAddress, Is.EqualTo("user3@test.com"));
+        }
     }
 
     //async optimalization
-    //start date > endDate
     //date span is bigger than 12 months
     //file contained some crappy data
 }

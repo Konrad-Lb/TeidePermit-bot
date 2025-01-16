@@ -15,9 +15,9 @@ namespace PermitService.Sources
             {
                 try
                 {
-                    var result = await ReadPermitRequestData(inputFilePath);
+                    var permitRequestData = await ReadPermitRequestData(inputFilePath);
                     fileProvider.DeleteFile(inputFilePath);
-                    return result;
+                    return WhereStartDateTimeIsLessOrEqualEndDateTime(permitRequestData);
                 }
                 catch (IOException)
                 {
@@ -33,6 +33,19 @@ namespace PermitService.Sources
         {
             var csvRawData = await fileProvider.ReadLines(inputFilePath);
             return csvRawData.Select(csvString => PermitRequestData.FromCsvString(csvString, fieldDelimeter));
+        }
+
+        private IEnumerable<PermitRequestData> WhereStartDateTimeIsLessOrEqualEndDateTime(IEnumerable<PermitRequestData> data)
+        {
+            return data.Where(x =>
+            {
+                if (x.StartDate > x.EndDate)
+                {
+                    logger.Warning($"Entry in input file {{StartDate = {x.StartDate.ToString("yyyy-MM-dd")}, EndDate = {x.EndDate.ToString("yyyy-MM-dd")} EmailAddress = {x.EmailAddress}}} has bigger StartDate then EndDate. It will be ignored");
+                    return false;
+                }
+                return true;
+            });
         }
     }
 }
