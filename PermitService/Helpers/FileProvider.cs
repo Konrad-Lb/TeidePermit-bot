@@ -8,7 +8,7 @@ namespace PermitService.Helpers
 {
     public class FileProvider : IFileProvider
     {
-        public async Task<List<string>> ReadLines(string filePath)
+        public async Task<IEnumerable<string>> ReadLines(string filePath)
         {
             var result = new List<string>();
             using var streamReader = new StreamReader(filePath);
@@ -18,6 +18,11 @@ namespace PermitService.Helpers
 
             return result;
 
+        }
+
+        public bool FileExists(string filePath)
+        {
+            return File.Exists(filePath);
         }
     }
 }

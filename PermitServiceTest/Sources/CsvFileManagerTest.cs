@@ -14,17 +14,32 @@ namespace PermitServiceTest.Sources
     [TestFixture]
     public class CsvFileManagerTest
     {
+        private Mock<IFileProvider> _fileProviderMock = null!;
+
+        [SetUp]
+        public void TestSetUp()
+        {
+            _fileProviderMock = new Mock<IFileProvider>();
+        }
+
+        [TearDown]
+        public void TestTearDown()
+        {
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()),Times.Once());
+        }
+
         [Test]
         public async Task ReadInputData_ThreeItemsInTheFile_ReturnedThreeEntries()
         {
-            var fileProviderStub = new Mock<IFileProvider>();
-            fileProviderStub.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync([
+            _fileProviderMock = new Mock<IFileProvider>();
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync([
                 "2025-01-13;2025-01-13;user1@test.com", 
                 "2025-02-01;2025-04-18;user2@test.com",
                 "2025-01-02;2025-08-31;user3@test.com"]);
             
-            var fileManager = new CsvFileManager(fileProviderStub.Object,';');
-            var result =  await fileManager.ReadInputDataAsync("input.csv");
+            var fileManager = new CsvFileManager(_fileProviderMock.Object,';');
+            var result =  (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
             Assert.That(result.Count, Is.EqualTo(3));
             Assert.That(result[0].StartDate, Is.EqualTo(new DateTime(2025,1,13)));
@@ -37,11 +52,24 @@ namespace PermitServiceTest.Sources
             Assert.That(result[2].EndDate, Is.EqualTo(new DateTime(2025, 8, 31)));
             Assert.That(result[2].EmailAddress, Is.EqualTo("user3@test.com"));
         }
+
+        [Test]
+        public async Task ReadInputData_FileNotExist_NoLinesRead()
+        {
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
+
+            var fileManager = new CsvFileManager(_fileProviderMock.Object, ';');
+            var result = await fileManager.ReadInputDataAsync("input.csv");
+
+            _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Never());
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
     }
 
     //async optimalization
     //start date > endDate
     //date span is bigger than 12 months
     //rmoving input file
-    //file not foundn
+    //cannot opend the file
+    //cant remove file - file not readu - do not read the data
 }

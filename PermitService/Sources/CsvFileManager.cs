@@ -9,20 +9,20 @@ namespace PermitService.Sources
 {
     public class CsvFileManager(IFileProvider fileProvider, char fieldDelimeter)
     {
-        private readonly char _fieldDelimeter = fieldDelimeter;
-
-
-        public async Task<List<PermitRequestData>> ReadInputDataAsync(string inputFilePath)
+        public async Task<IEnumerable<PermitRequestData>> ReadInputDataAsync(string inputFilePath)
         {
-            var result = new List<PermitRequestData>();
-            var inputFileData = await fileProvider.ReadLines(inputFilePath);
-            foreach(var inputDataLine in inputFileData)
+            if (fileProvider.FileExists(inputFilePath))
             {
-                var currentLine = inputDataLine;
-                result.Add(PermitRequestData.FromCsvString(currentLine,_fieldDelimeter));
+                return await ReadPermitRequestData(inputFilePath);
             }
 
-            return result;
+            return [];
+        }
+
+        private async Task<IEnumerable<PermitRequestData>> ReadPermitRequestData(string inputFilePath)
+        {
+            var csvRawData = await fileProvider.ReadLines(inputFilePath);
+            return csvRawData.Select(csvString => PermitRequestData.FromCsvString(csvString, fieldDelimeter));
         }
     }
 }
