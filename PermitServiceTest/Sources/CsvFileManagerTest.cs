@@ -15,11 +15,13 @@ namespace PermitServiceTest.Sources
     public class CsvFileManagerTest
     {
         private Mock<IFileProvider> _fileProviderMock = null!;
+        private Mock<ILog4NetAdapter> _logger = null!;
 
         [SetUp]
         public void TestSetUp()
         {
             _fileProviderMock = new Mock<IFileProvider>();
+            _logger = new Mock<ILog4NetAdapter>();
         }
 
         [TearDown]
@@ -38,7 +40,7 @@ namespace PermitServiceTest.Sources
                 "2025-02-01;2025-04-18;user2@test.com",
                 "2025-01-02;2025-08-31;user3@test.com"]);
             
-            var fileManager = new CsvFileManager(_fileProviderMock.Object,';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object,';');
             var result =  (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
@@ -59,7 +61,7 @@ namespace PermitServiceTest.Sources
         {
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
 
-            var fileManager = new CsvFileManager(_fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
             _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Never());
@@ -68,17 +70,18 @@ namespace PermitServiceTest.Sources
         }
 
         [Test]
-        public async Task ReadInPutData_InputFileCantBeDelete_NoLinesRead()
+        public async Task ReadInPutData_InputFileCantBeDeleted_NoLinesRead()
         {
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
             _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync(["2025-01-13;2025-01-13;user@test.com"]);
             _fileProviderMock.Setup(x => x.DeleteFile(It.IsAny<string>())).Throws<IOException>();
 
-            var fileManager = new CsvFileManager(_fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
             _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Once);
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
+            _logger.Verify(x => x.Warning("Input file cannot be opened or removed. Data in this file will be not consumed."));
             Assert.That(result.Count, Is.EqualTo(0));
         }
 
@@ -88,11 +91,12 @@ namespace PermitServiceTest.Sources
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
             _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).Throws<IOException>();
 
-            var fileManager = new CsvFileManager(_fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
             _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Once);
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Never);
+            _logger.Verify(x => x.Warning("Input file cannot be opened or removed. Data in this file will be not consumed."));
             Assert.That(result.Count, Is.EqualTo(0));
         }
     }
@@ -101,5 +105,4 @@ namespace PermitServiceTest.Sources
     //start date > endDate
     //date span is bigger than 12 months
     //file contained some crappy data
-    //add log that file cannot be deleted
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class CsvFileManager(IFileProvider fileProvider, char fieldDelimeter)
+    public class CsvFileManager(ILog4NetAdapter logger, IFileProvider fileProvider, char fieldDelimeter)
     {
         public async Task<IEnumerable<PermitRequestData>> ReadInputDataAsync(string inputFilePath)
         {
@@ -21,6 +21,7 @@ namespace PermitService.Sources
                 }
                 catch (IOException)
                 {
+                    logger.Warning("Input file cannot be opened or removed. Data in this file will be not consumed.");
                 }
                 
             }
