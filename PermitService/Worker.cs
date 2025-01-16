@@ -1,18 +1,22 @@
+using log4net.Config;
+using log4net.Repository;
+using log4net;
 using Microsoft.Extensions.Options;
 using PermitService.Configuration;
+using PermitService.Helpers;
+using PermitService.Sources;
+using System.Reflection;
 
 namespace PermitService
 {
-    public class Worker(ILogger<Worker> logger, IOptions<AppSettings> appSettings) : BackgroundService
+    public class Worker(ILog log4netLogger, IOptions<AppSettings> appSettings) : BackgroundService
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+         
+            
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (logger.IsEnabled(LogLevel.Information))
-                {
-                    logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                }
                 await Task.Delay(appSettings.Value.RequestIntervalInSeconds * 1000, stoppingToken);
             }
         }
