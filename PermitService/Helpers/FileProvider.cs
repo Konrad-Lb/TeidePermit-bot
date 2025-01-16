@@ -24,5 +24,10 @@ namespace PermitService.Helpers
         {
             return File.Exists(filePath);
         }
+
+        public void DeleteFile(string filePath)
+        {
+            File.Delete(filePath);
+        }
     }
 }

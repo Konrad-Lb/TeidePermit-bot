@@ -13,7 +13,16 @@ namespace PermitService.Sources
         {
             if (fileProvider.FileExists(inputFilePath))
             {
-                return await ReadPermitRequestData(inputFilePath);
+                try
+                {
+                    var result = await ReadPermitRequestData(inputFilePath);
+                    fileProvider.DeleteFile(inputFilePath);
+                    return result;
+                }
+                catch (IOException)
+                {
+                }
+                
             }
 
             return [];
