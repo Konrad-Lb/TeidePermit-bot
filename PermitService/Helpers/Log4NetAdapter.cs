@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PermitService.Helpers
 {
-    public class Logger(ILog logger) : ILogger
+    public class Log4NetAdapter(ILog logger) : ILog4NetAdapter
     {
         public void Info(string logMessage)
         {

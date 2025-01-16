@@ -1,6 +1,6 @@
 ﻿namespace PermitService.Helpers
 {
-    public interface ILogger
+    public interface ILog4NetAdapter
     {
         void Debug(string logMessage);
         void Error(string logMessage);
