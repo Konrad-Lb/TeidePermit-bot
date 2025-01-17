@@ -31,7 +31,7 @@ namespace PermitService.Helpers
         {
             ThrowExceptionIfCsvStringIsEmpty(csvString);
             RemoveLastCharIfStringEndsWithFieldDelimeter(ref csvString, fieldDelimater);
-            
+
             return new PermitRequestData
             {
                 StartDate = ReadDateTime(ref csvString, fieldDelimater),
@@ -60,7 +60,7 @@ namespace PermitService.Helpers
                 line = line.Remove(0, lastDelimIndex + 1);
                 return dateTime;
             }
-            catch(FormatException)
+            catch (FormatException)
             {
                 throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string. CSV string contains not valid date time format '{line[0..lastDelimIndex]}'. Correct format is 'YYYY-MM-dd'");
             }
@@ -73,7 +73,7 @@ namespace PermitService.Helpers
                 int lastDelimIndex = GetDelimeterIndexOrThrowExceptionIfNotFound(line, fieldDelimeter);
                 return line[0..lastDelimIndex];
             }
-            catch(InvalidOperationException)
+            catch (InvalidOperationException)
             {
                 ThrowEcxeptionIfEmailAddressEmpty(line);
                 return line;

@@ -17,9 +17,9 @@ namespace PermitServiceTest.Helpers
         public void FromCSVString_PeroperCsvString_StringParsedCorrectly(string csvString)
         {
             var permitData = PermitRequestData.FromCsvString(csvString, ';');
-            
-            Assert.That(permitData.StartDate, Is.EqualTo(new DateTime(2025,1,13)));
-            Assert.That(permitData.EndDate, Is.EqualTo(new DateTime(2025,3,15)));
+
+            Assert.That(permitData.StartDate, Is.EqualTo(new DateTime(2025, 1, 13)));
+            Assert.That(permitData.EndDate, Is.EqualTo(new DateTime(2025, 3, 15)));
             Assert.That(permitData.EmailAddress, Is.EqualTo("user1@test.com"));
         }
 
@@ -72,6 +72,34 @@ namespace PermitServiceTest.Helpers
 
             var exception = Assert.Throws<InvalidOperationException>(() => PermitRequestData.FromCsvString(csvString, fieldDelimeter));
             Assert.That(exception?.Message, Is.EqualTo($"Cannot create PermitRequestData object from CSV string. Email address field is empty."));
+        }
+
+        [Test]
+        public void IsStartDateBiggerThanEndDate_VariousPermitRequestDataObjects_MethodReturnsProperValues()
+        {
+            var obj1 = new PermitRequestData { StartDate = new DateTime(2025, 1, 13), EndDate = new DateTime(2025, 1, 14) };
+            var obj2 = new PermitRequestData { StartDate = new DateTime(2025, 1, 13), EndDate = new DateTime(2025, 1, 13) };
+            var obj3 = new PermitRequestData { StartDate = new DateTime(2025, 1, 13), EndDate = new DateTime(2025, 1, 12) };
+
+            Assert.That(obj1.IsStartDateBiggerThanEndDate(), Is.False);
+            Assert.That(obj2.IsStartDateBiggerThanEndDate(), Is.False);
+            Assert.That(obj3.IsStartDateBiggerThanEndDate(), Is.True);
+        }
+
+        [Test]
+        public void DatePeriodSpansOverTwelveMonths_VariousRequestDataObjects_MethodReturnsProperValues()
+        {
+            var obj1 = new PermitRequestData { StartDate = new DateTime(2025, 1, 13), EndDate = new DateTime(2025, 12, 31) };
+            var obj2 = new PermitRequestData { StartDate = new DateTime(2025, 1, 13), EndDate = new DateTime(2026, 1, 1) };
+            var obj3 = new PermitRequestData { StartDate = new DateTime(2025, 1, 13), EndDate = new DateTime(2026, 2, 1) };
+            var obj4 = new PermitRequestData { StartDate = new DateTime(2024, 1, 13), EndDate = new DateTime(2024, 12, 31) }; //leap year
+            var obj5 = new PermitRequestData { StartDate = new DateTime(2024, 1, 13), EndDate = new DateTime(2025, 1, 1) }; //leap year
+
+            Assert.That(obj1.DatePeriodSpansOverTwelveMonths(), Is.False);
+            Assert.That(obj2.DatePeriodSpansOverTwelveMonths(), Is.True);
+            Assert.That(obj3.DatePeriodSpansOverTwelveMonths(), Is.True);
+            Assert.That(obj4.DatePeriodSpansOverTwelveMonths(), Is.False);
+            Assert.That(obj5.DatePeriodSpansOverTwelveMonths(), Is.True);
         }
     }
 }

@@ -154,7 +154,4 @@ namespace PermitServiceTest.Sources
             Assert.That(result[1].EmailAddress, Is.EqualTo("user4@test.com"));
         }
     }
-
-    //async optimalization
-    //file contained some crappy data
 }
