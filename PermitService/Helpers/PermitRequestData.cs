@@ -13,6 +13,20 @@ namespace PermitService.Helpers
         public DateTime EndDate { get; set; }
         public string EmailAddress { get; set; } = string.Empty;
 
+        public bool IsStartDateBiggerThanEndDate()
+        {
+            return StartDate > EndDate;
+        }
+
+        public bool DatePeriodSpansOverTwelveMonths()
+        {
+            var startDate = new DateTime(StartDate.Year, StartDate.Month, 1);
+            var endDate = new DateTime(EndDate.Year, EndDate.Month, 1);
+            var monthSpan = endDate - startDate;
+
+            return monthSpan >= new TimeSpan(365, 0, 0, 0);
+        }
+
         public static PermitRequestData FromCsvString(string csvString, char fieldDelimater)
         {
             ThrowExceptionIfCsvStringIsEmpty(csvString);
