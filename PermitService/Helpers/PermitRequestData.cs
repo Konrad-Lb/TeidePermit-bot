@@ -27,6 +27,25 @@ namespace PermitService.Helpers
             return monthSpan >= new TimeSpan(365, 0, 0, 0);
         }
 
+        public void AdjustStartDateToCurrentDate(IDateTimeService dateTimeService)
+        {
+            var startDatebeforeAdjust = StartDate;
+
+            UpdateStartDateIfBiggerThan(dateTimeService.CurrentDate);
+           
+            if(IsStartDateBiggerThanEndDate())
+            {
+                StartDate = startDatebeforeAdjust;
+                throw new InvalidOperationException("Cannot adjust PermitRequestData object as start and end dates will be in the past.");
+            }
+        }
+
+        public void UpdateStartDateIfBiggerThan(DateTime dateTime)
+        {
+            if (StartDate < dateTime)
+                StartDate = dateTime;
+        }
+
         public static PermitRequestData FromCsvString(string csvString, char fieldDelimater)
         {
             ThrowExceptionIfCsvStringIsEmpty(csvString);

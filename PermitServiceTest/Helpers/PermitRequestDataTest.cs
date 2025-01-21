@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Moq;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using PermitService.Helpers;
 using System;
@@ -111,6 +112,42 @@ namespace PermitServiceTest.Helpers
             Assert.That(obj1.ToCsvString(';'), Is.EqualTo("0001-01-01;0001-01-01;"));
             Assert.That(obj2.ToCsvString(';'), Is.EqualTo("2025-01-20;2025-05-15;test@test.com"));
             Assert.That(obj2.ToCsvString('@'), Is.EqualTo("2025-01-20@2025-05-15@test@test.com"));
+        }
+
+        [Test]
+        public void AdjustDayPeriodToCurrentDay_StartDateIsBeforeCurrentData_StartDateAdjustedToCurrentDate()
+        {
+            var currentDateStrub = new Mock<IDateTimeService>();
+            currentDateStrub.Setup(x => x.CurrentDate).Returns(new DateTime(2025, 1, 21));
+            
+            var permitRequestData = new PermitRequestData { StartDate = new DateTime(2025,1,1), EndDate = new DateTime(2025, 5, 15) };
+            permitRequestData.AdjustStartDateToCurrentDate(currentDateStrub.Object);
+            Assert.That(permitRequestData.StartDate, Is.EqualTo(currentDateStrub.Object.CurrentDate));
+        }
+
+        [TestCase(2025, 1, 21, Description = "AdjustDayPeriodToCurrentDay_StartDateIsEqualCurrentDate_DatePeriodNotChanged")]
+        [TestCase(2025, 1, 31, Description = "AdjustDayPeriodToCurrentDay_StartDateIsAfterCurrentDate_DatePeriodNotChanged")]
+        public void AdjustDayPeriodToCurrentDay_StartDateIsEqualOrAfterCurrentDate_DatePeriodNotChanged(int startYear, int startMonth, int startDay)
+        {
+            var currentDateStub = new Mock<IDateTimeService>();
+            currentDateStub.Setup(x => x.CurrentDate).Returns(new DateTime(2025, 1, 21));
+
+            var permitRequestData = new PermitRequestData { StartDate = new DateTime(startYear, startMonth, startDay), EndDate = new DateTime(2025, 5, 15) };
+            permitRequestData.AdjustStartDateToCurrentDate(currentDateStub.Object);
+            Assert.That(permitRequestData.StartDate, Is.EqualTo(new DateTime(startYear, startMonth, startDay)));
+        }
+
+        [Test]
+        public void AdjustDayPeriodToCurrentDay_StartDateAndEndDateAreBeforeCurrentDate_DatePeriodNotChanged()
+        {
+            var currentDateStub = new Mock<IDateTimeService>();
+            currentDateStub.Setup(x => x.CurrentDate).Returns(new DateTime(2025, 6, 6));
+
+            var permitRequestData = new PermitRequestData { StartDate = new DateTime(2025, 1, 1), EndDate = new DateTime(2025, 5, 15) };
+
+            var exception = Assert.Throws<InvalidOperationException>(() => permitRequestData.AdjustStartDateToCurrentDate(currentDateStub.Object));
+            Assert.That(exception?.Message, Is.EqualTo("Cannot adjust PermitRequestData object as start and end dates will be in the past."));
+            Assert.That(permitRequestData.StartDate, Is.EqualTo(new DateTime(2025, 1, 1)));
         }
     }
 }
