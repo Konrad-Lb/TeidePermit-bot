@@ -11,18 +11,41 @@ namespace PermitService.Sources
     {
         public async Task<IEnumerable<PermitRequestData>> ReadInputDataAsync(string inputFilePath)
         {
+            try
+            {
+                Action<string> deleteInputFile = (inputFilePath) => { fileProvider.DeleteFile(inputFilePath); };
+                return await ReadPermitRequestDataFromCsvFileAsync(inputFilePath, deleteInputFile);
+            }
+            catch (IOException)
+            {
+                logger.Warning("Input file cannot be opened or removed. Data in this file will be not consumed.");
+            }
+
+            return [];
+        }
+
+        public async Task<IEnumerable<PermitRequestData>> ReadSavedDataAsync(string inputFilePath)
+        {
+            try
+            {
+                Action<string> dontDeleteFile = (inputFilePath) => { };
+                return await ReadPermitRequestDataFromCsvFileAsync(inputFilePath, dontDeleteFile);
+            }
+            catch (IOException)
+            {
+                logger.Warning("Saved file cannot be opended. Data saved in this file will be not read.");
+            }
+
+            return [];
+        }
+
+        private async Task<IEnumerable<PermitRequestData>> ReadPermitRequestDataFromCsvFileAsync(string inputFilePath, Action<string> deleteAction)
+        {
             if (fileProvider.FileExists(inputFilePath))
             {
-                try
-                {
-                    var permitRequestData = await ReadPermitRequestData(inputFilePath);
-                    fileProvider.DeleteFile(inputFilePath);
-                    return permitRequestData.Where(x => !IsStartDateBiggerThanEndDate(x) && !DatePeriodSpansOverTwelveMonths(x));
-                }
-                catch (IOException)
-                {
-                    logger.Warning("Input file cannot be opened or removed. Data in this file will be not consumed.");
-                }
+                var permitRequestData = await ReadPermitRequestData(inputFilePath);
+                deleteAction(inputFilePath);
+                return permitRequestData.Where(x => !IsStartDateBiggerThanEndDate(x) && !DatePeriodSpansOverTwelveMonths(x));
             }
 
             return [];

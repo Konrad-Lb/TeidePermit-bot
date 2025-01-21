@@ -83,7 +83,7 @@ namespace PermitServiceTest.Sources
         }
 
         [Test]
-        public async Task ReadInputData_InputFileCannotBeOpened_NoLinesRead()
+        public async Task ReadInputData_InputFileCannotBeOpened_LogExceptionMessageAndRetunsNoLines()
         {
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
             _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).Throws<IOException>();
@@ -152,6 +152,39 @@ namespace PermitServiceTest.Sources
             Assert.That(result[1].StartDate, Is.EqualTo(new DateTime(2024, 1, 13)));
             Assert.That(result[1].EndDate, Is.EqualTo(new DateTime(2024, 12, 31)));
             Assert.That(result[1].EmailAddress, Is.EqualTo("user4@test.com"));
+        }
+
+        [Test]
+        public async Task ReadSavedData_SomeItemsInTheFile_SavedFileNotDeletedAfterRead()
+        {
+            _fileProviderMock = new Mock<IFileProvider>();
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync([
+                "2025-01-13;2025-01-13;user1@test.com",
+                "2025-02-01;2025-04-18;user2@test.com",
+                "2025-01-02;2025-08-31;user3@test.com"]);
+
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var result = (await fileManager.ReadSavedDataAsync("saved.csv")).ToList();
+
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
+            _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ReadSavedData_InputFileCannotBeOpened_LogExceptionMessageAndRetunsNoLines()
+        {
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).Throws<IOException>();
+
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var result = await fileManager.ReadSavedDataAsync("saved.csv");
+
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
+            _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Once);
+            _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Never);
+            _logger.Verify(x => x.Warning("Saved file cannot be opended. Data saved in this file will be not read."));
+            Assert.That(result.Count, Is.EqualTo(0));
         }
 
         [Test]
