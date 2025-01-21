@@ -101,5 +101,16 @@ namespace PermitServiceTest.Helpers
             Assert.That(obj4.DatePeriodSpansOverTwelveMonths(), Is.False);
             Assert.That(obj5.DatePeriodSpansOverTwelveMonths(), Is.True);
         }
+
+        [Test]
+        public void ToCsvString_PermitRequestData_ConvertToCsvString()
+        {
+            var obj1 = new PermitRequestData();
+            var obj2 = new PermitRequestData { StartDate = new DateTime(2025, 1, 20), EndDate = new DateTime(2025, 5, 15), EmailAddress = "test@test.com" };
+
+            Assert.That(obj1.ToCsvString(';'), Is.EqualTo("0001-01-01;0001-01-01;"));
+            Assert.That(obj2.ToCsvString(';'), Is.EqualTo("2025-01-20;2025-05-15;test@test.com"));
+            Assert.That(obj2.ToCsvString('@'), Is.EqualTo("2025-01-20@2025-05-15@test@test.com"));
+        }
     }
 }

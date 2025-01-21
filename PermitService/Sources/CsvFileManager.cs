@@ -55,5 +55,23 @@ namespace PermitService.Sources
 
             return false;
         }
+
+        public async Task SavePermitRequestData(string saveFilePath, List<PermitRequestData> permitRequestDataList)
+        {
+            if(permitRequestDataList.Count > 0)
+            {
+                DeleteSaveFileIfExists(saveFilePath);
+
+                var csvStringList = permitRequestDataList.Select(x => x.ToCsvString(fieldDelimeter));
+                await fileProvider.WriteLines(saveFilePath, csvStringList);
+            }
+           
+        }
+
+        private void DeleteSaveFileIfExists(string saveFilePath)
+        {
+            if (fileProvider.FileExists(saveFilePath))
+                fileProvider.DeleteFile(saveFilePath);
+        }
     }
 }

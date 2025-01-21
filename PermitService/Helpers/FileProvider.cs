@@ -29,5 +29,12 @@ namespace PermitService.Helpers
         {
             File.Delete(filePath);
         }
+
+        public async Task WriteLines(string filePath, IEnumerable<string> lines)
+        { 
+            using var streamWriter = new StreamWriter(filePath);
+            foreach(var line in lines)
+                await  streamWriter.WriteLineAsync(line);
+        }
     }
 }

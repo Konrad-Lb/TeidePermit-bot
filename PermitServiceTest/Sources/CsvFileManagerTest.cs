@@ -24,12 +24,6 @@ namespace PermitServiceTest.Sources
             _logger = new Mock<ILog4NetAdapter>();
         }
 
-        [TearDown]
-        public void TestTearDown()
-        {
-            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()),Times.Once());
-        }
-
         [Test]
         public async Task ReadInputData_ThreeItemsInTheFile_ReturnedThreeEntries()
         {
@@ -43,6 +37,7 @@ namespace PermitServiceTest.Sources
             var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object,';');
             var result =  (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
             Assert.That(result.Count, Is.EqualTo(3));
             Assert.That(result[0].StartDate, Is.EqualTo(new DateTime(2025,1,13)));
@@ -64,6 +59,7 @@ namespace PermitServiceTest.Sources
             var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
             _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Never());
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Never);
             Assert.That(result.Count, Is.EqualTo(0));
@@ -79,6 +75,7 @@ namespace PermitServiceTest.Sources
             var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
             _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Once);
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
             _logger.Verify(x => x.Warning("Input file cannot be opened or removed. Data in this file will be not consumed."));
@@ -94,6 +91,7 @@ namespace PermitServiceTest.Sources
             var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
             _fileProviderMock.Verify(x => x.ReadLines(It.IsAny<string>()), Times.Once);
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Never);
             _logger.Verify(x => x.Warning("Input file cannot be opened or removed. Data in this file will be not consumed."));
@@ -113,6 +111,7 @@ namespace PermitServiceTest.Sources
             var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
             _logger.Verify(x => x.Warning($"Entry in input file {{StartDate = 2025-12-31, EndDate = 2025-04-18 EmailAddress = user2@test.com}} has bigger StartDate then EndDate. It will be ignored"));
             Assert.That(result.Count, Is.EqualTo(2));
@@ -140,6 +139,7 @@ namespace PermitServiceTest.Sources
             var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
             var result = (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
             _logger.Verify(x => x.Warning($"Entry in input file {{StartDate = 2025-01-13, EndDate = 2026-01-01 EmailAddress = user2@test.com}} spans more than 12 calendar months. It will be ignored."));
             _logger.Verify(x => x.Warning($"Entry in input file {{StartDate = 2025-01-13, EndDate = 2026-02-01 EmailAddress = user3@test.com}} spans more than 12 calendar months. It will be ignored."));
@@ -152,6 +152,30 @@ namespace PermitServiceTest.Sources
             Assert.That(result[1].StartDate, Is.EqualTo(new DateTime(2024, 1, 13)));
             Assert.That(result[1].EndDate, Is.EqualTo(new DateTime(2024, 12, 31)));
             Assert.That(result[1].EmailAddress, Is.EqualTo("user4@test.com"));
+        }
+
+        [Test]
+        public async Task SavePermitRequestData_EmptyPermitRequestDataList_FileNotCreated()
+        {   
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            await fileManager.SavePermitRequestData("output.csv",[]);
+
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Never);
+            _fileProviderMock.Verify(x => x.WriteLines(It.IsAny<string>(), It.IsAny<List<string>>()), Times.Never);
+        }
+
+        [TestCase(true, Description = "SavePermitRequestData_EntryInPermitRequestDataListAndSaveFileExists_FileSaved")]
+        [TestCase(false, Description = "SavePermitRequestData_EntryInPermitRequestDataListAndSaveFileNotExists_FileSaved")]
+        public async Task SavePermitRequestData_EntryInPermitRequestDataList_FileSaved(bool fileExists)
+        {
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(fileExists);
+
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            await fileManager.SavePermitRequestData("output.csv", [new PermitRequestData { StartDate = new DateTime(2025,1,20), EndDate = new DateTime(2025,5,15), EmailAddress = "test@test.com" }]);
+
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once);
+            _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), fileExists ? Times.Once() : Times.Never());
+            _fileProviderMock.Verify(x => x.WriteLines(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()), Times.Once);
         }
     }
 }

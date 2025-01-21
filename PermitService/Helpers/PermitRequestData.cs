@@ -98,5 +98,10 @@ namespace PermitService.Helpers
                 throw new InvalidOperationException($"Cannot create PermitRequestData object from CSV string. CSV string does not have expected delimeter '{fieldDelimeter}' or number of CSV fields less than three.");
             return delimIndex;
         }
+
+        public string ToCsvString(char fieldDelimeter)
+        {
+            return $"{StartDate:yyyy-MM-dd}{fieldDelimeter}{EndDate:yyyy-MM-dd}{fieldDelimeter}{EmailAddress}";
+        }
     }
 }
