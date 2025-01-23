@@ -16,12 +16,14 @@ namespace PermitServiceTest.Sources
     {
         private Mock<IFileProvider> _fileProviderMock = null!;
         private Mock<ILog4NetAdapter> _logger = null!;
+        private Mock<IDateTimeService> _dateTimeServiceStub = null!;
 
         [SetUp]
         public void TestSetUp()
         {
             _fileProviderMock = new Mock<IFileProvider>();
             _logger = new Mock<ILog4NetAdapter>();
+            _dateTimeServiceStub = new Mock<IDateTimeService>();
         }
 
         [Test]
@@ -34,10 +36,10 @@ namespace PermitServiceTest.Sources
                 "2025-02-01;2025-04-18;user2@test.com",
                 "2025-01-02;2025-08-31;user3@test.com"]);
             
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object,';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object,';');
             var result =  (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
-            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
+            _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once);
             _fileProviderMock.Verify(x => x.DeleteFile(It.IsAny<string>()), Times.Once);
             Assert.That(result.Count, Is.EqualTo(3));
             Assert.That(result[0].StartDate, Is.EqualTo(new DateTime(2025,1,13)));
@@ -56,7 +58,7 @@ namespace PermitServiceTest.Sources
         {
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
@@ -72,7 +74,7 @@ namespace PermitServiceTest.Sources
             _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync(["2025-01-13;2025-01-13;user@test.com"]);
             _fileProviderMock.Setup(x => x.DeleteFile(It.IsAny<string>())).Throws<IOException>();
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
@@ -88,7 +90,7 @@ namespace PermitServiceTest.Sources
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
             _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).Throws<IOException>();
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             var result = await fileManager.ReadInputDataAsync("input.csv");
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
@@ -108,7 +110,7 @@ namespace PermitServiceTest.Sources
                 "2025-12-31;2025-04-18;user2@test.com",
                 "2025-01-02;2025-08-31;user3@test.com"]);
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             var result = (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
@@ -136,7 +138,7 @@ namespace PermitServiceTest.Sources
                 "2024-01-13;2025-01-01;user5@test.com"   //leap year
             ]);
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             var result = (await fileManager.ReadInputDataAsync("input.csv")).ToList();
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
@@ -155,6 +157,21 @@ namespace PermitServiceTest.Sources
         }
 
         [Test]
+        public async Task ReadInputData_StartAndEndDatesAreInThePast_EntriesFromThePastAreNotReturned()
+        {
+            _dateTimeServiceStub.Setup(x => x.CurrentDate).Returns(new DateTime(2025, 1, 23));
+            _fileProviderMock = new Mock<IFileProvider>();
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync([
+                "2025-01-10;2025-01-20;user1@test.com",
+            ]);
+
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
+            var result = (await fileManager.ReadInputDataAsync("input.csv")).ToList();
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
+
+        [Test]
         public async Task ReadSavedData_SomeItemsInTheFile_SavedFileNotDeletedAfterRead()
         {
             _fileProviderMock = new Mock<IFileProvider>();
@@ -164,7 +181,7 @@ namespace PermitServiceTest.Sources
                 "2025-02-01;2025-04-18;user2@test.com",
                 "2025-01-02;2025-08-31;user3@test.com"]);
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             var result = (await fileManager.ReadSavedDataAsync("saved.csv")).ToList();
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
@@ -177,7 +194,7 @@ namespace PermitServiceTest.Sources
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
             _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).Throws<IOException>();
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             var result = await fileManager.ReadSavedDataAsync("saved.csv");
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once());
@@ -190,7 +207,7 @@ namespace PermitServiceTest.Sources
         [Test]
         public async Task SavePermitRequestData_EmptyPermitRequestDataList_FileNotCreated()
         {   
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             await fileManager.SavePermitRequestData("output.csv",[]);
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Never);
@@ -203,7 +220,7 @@ namespace PermitServiceTest.Sources
         {
             _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(fileExists);
 
-            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, ';');
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
             await fileManager.SavePermitRequestData("output.csv", [new PermitRequestData { StartDate = new DateTime(2025,1,20), EndDate = new DateTime(2025,5,15), EmailAddress = "test@test.com" }]);
 
             _fileProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once);

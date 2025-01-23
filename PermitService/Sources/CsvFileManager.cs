@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class CsvFileManager(ILog4NetAdapter logger, IFileProvider fileProvider, char fieldDelimeter)
+    public class CsvFileManager(ILog4NetAdapter logger, IFileProvider fileProvider, IDateTimeService dateTimeService, char fieldDelimeter)
     {
         public async Task<IEnumerable<PermitRequestData>> ReadInputDataAsync(string inputFilePath)
         {
@@ -45,10 +46,25 @@ namespace PermitService.Sources
             {
                 var permitRequestData = await ReadPermitRequestData(inputFilePath);
                 deleteAction(inputFilePath);
-                return permitRequestData.Where(x => !IsStartDateBiggerThanEndDate(x) && !DatePeriodSpansOverTwelveMonths(x));
+                return permitRequestData.Where(x => IsPermitRequestDataValid(x));
             }
 
             return [];
+        }
+
+        private bool IsPermitRequestDataValid(PermitRequestData permitRequestData)
+        {
+            try
+            {
+                if (!IsStartDateBiggerThanEndDate(permitRequestData) && !DatePeriodSpansOverTwelveMonths(permitRequestData))
+                {
+                    permitRequestData.AdjustStartDateToCurrentDate(dateTimeService);
+                    return true;
+                }
+            }
+            catch (InvalidOperationException) { }
+
+            return false;
         }
 
         private async Task<IEnumerable<PermitRequestData>> ReadPermitRequestData(string inputFilePath)
