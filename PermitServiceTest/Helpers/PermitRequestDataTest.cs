@@ -149,5 +149,21 @@ namespace PermitServiceTest.Helpers
             Assert.That(exception?.Message, Is.EqualTo("Cannot adjust PermitRequestData object as start and end dates will be in the past."));
             Assert.That(permitRequestData.StartDate, Is.EqualTo(new DateTime(2025, 1, 1)));
         }
+
+        [Test]
+        public void GetDistinctMonthNumbers_DiffrentDatePeriods_DistinctMonthNumbersReturned()
+        {
+            var permitRequestData1 = new PermitRequestData { StartDate = new DateTime(2025, 1, 24), EndDate = new DateTime(2025, 1, 28) };
+            var permitRequestData2 = new PermitRequestData { StartDate = new DateTime(2025, 1, 24), EndDate = new DateTime(2025, 2, 1) };
+            var permitRequestData3 = new PermitRequestData { StartDate = new DateTime(2025, 1, 24), EndDate = new DateTime(2026, 6, 2) };
+            var permitRequestData4 = new PermitRequestData { StartDate = new DateTime(2025, 1, 31), EndDate = new DateTime(2025, 1, 1) };
+
+
+            Assert.That(permitRequestData1.GetDistinctMonthNumbers(), Is.EqualTo([Month.January]));
+            Assert.That(permitRequestData2.GetDistinctMonthNumbers(), Is.EqualTo([Month.January, Month.February]));
+            Assert.That(permitRequestData3.GetDistinctMonthNumbers(), Is.EqualTo([Month.January, Month.February, Month.March, Month.April, Month.May, Month.June, Month.July, 
+                                                                                 Month.August, Month.September, Month.October, Month.November, Month.December]));
+            Assert.That(permitRequestData4.GetDistinctMonthNumbers(), Is.EqualTo(new List<int>()));
+        }
     }
 }

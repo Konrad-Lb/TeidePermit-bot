@@ -46,6 +46,29 @@ namespace PermitService.Helpers
                 StartDate = dateTime;
         }
 
+        public IEnumerable<Month> GetDistinctMonthNumbers()
+        {
+            if (!IsStartDateBiggerThanEndDate())
+                return GetMonthNumbers().Distinct();
+
+            return [];
+        }
+
+        private List<Month> GetMonthNumbers()
+        {
+            var result = new List<Month>();
+            var fistdDayOfMonth = new DateTime(StartDate.Year, StartDate.Month, 1);
+
+            do
+            {
+                result.Add((Month)fistdDayOfMonth.Month);
+                fistdDayOfMonth = fistdDayOfMonth.AddMonths(1);
+            }
+            while (fistdDayOfMonth <= EndDate);
+
+            return result;
+        }
+
         public static PermitRequestData FromCsvString(string csvString, char fieldDelimater)
         {
             ThrowExceptionIfCsvStringIsEmpty(csvString);
