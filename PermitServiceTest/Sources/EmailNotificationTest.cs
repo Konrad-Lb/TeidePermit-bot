@@ -26,7 +26,7 @@ namespace PermitServiceTest.Sources
         [Test]
         public async Task SendEmailAsync_SendEmailWithSubjectAndBody_EmailSentToOnlyOneRecipient()
         {
-            var emailNotification = new EmailNotification(_smtpClientMock.Object, _appSettingsStub.Object);
+            var emailNotification = new EmailSender(_smtpClientMock.Object, _appSettingsStub.Object);
             await emailNotification.SendEmailAsync(_emailSubject, _emailBody, _recipientEmailAddress);
 
             _smtpClientMock.Verify(x =>
@@ -39,7 +39,7 @@ namespace PermitServiceTest.Sources
         [Test]
         public async Task SendEmailAsync_SendEmailWithSubjectAndBody_EmailSentWithProperMailMessage()
         {
-            var emailNotification = new EmailNotification(_smtpClientMock.Object, _appSettingsStub.Object);
+            var emailNotification = new EmailSender(_smtpClientMock.Object, _appSettingsStub.Object);
             await emailNotification.SendEmailAsync(_emailSubject, _emailBody, _recipientEmailAddress);
 
             _smtpClientMock.Verify(x => 
@@ -59,7 +59,7 @@ namespace PermitServiceTest.Sources
         {
             _smtpClientMock.Setup(x => x.SendAsync(It.IsAny<MailMessage>())).Throws<InvalidOperationException>();
 
-            var emailNotification = new EmailNotification(_smtpClientMock.Object, _appSettingsStub.Object);
+            var emailNotification = new EmailSender(_smtpClientMock.Object, _appSettingsStub.Object);
             Assert.ThrowsAsync<InvalidOperationException>(async () =>  await emailNotification.SendEmailAsync(_emailSubject, _emailBody, _recipientEmailAddress) );
         }
     }
