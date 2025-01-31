@@ -43,7 +43,7 @@ namespace PermitServiceTest.Sources
             var currMonthCallendar = new StringBuilder();
             currMonthCallendar.Append("<html><table><tbody>");
             currMonthCallendar.Append(" <tr>");
-            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("     <table class='meses'><tbody><tr>");
             currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
             currMonthCallendar.Append("     </tr></tbody></table>");
             currMonthCallendar.Append(" </tr>");
@@ -72,7 +72,7 @@ namespace PermitServiceTest.Sources
             var currMonthCallendar = new StringBuilder();
             currMonthCallendar.Append("<html><table><tbody>");
             currMonthCallendar.Append(" <tr>");
-            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("     <table class='meses'><tbody><tr>");
             currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
             currMonthCallendar.Append("     </tr></tbody></table>");
             currMonthCallendar.Append(" </tr>");
@@ -102,7 +102,7 @@ namespace PermitServiceTest.Sources
             var currMonthCallendar = new StringBuilder();
             currMonthCallendar.Append("<html><table><tbody>");
             currMonthCallendar.Append(" <tr>");
-            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("     <table class='meses'><tbody><tr>");
             currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
             currMonthCallendar.Append("     </tr></tbody></table>");
             currMonthCallendar.Append(" </tr>");
@@ -173,7 +173,7 @@ namespace PermitServiceTest.Sources
             var montCalendar = new StringBuilder();
             montCalendar.Append("<html><table><tbody>");
             montCalendar.Append(" <tr>");
-            montCalendar.Append("     <table class='messes'><tbody><tr>");
+            montCalendar.Append("     <table class='meses'><tbody><tr>");
             montCalendar.Append($"         <td align='center'>{monthName} de 2025</td>");
             montCalendar.Append("     </tr></tbody></table>");
             montCalendar.Append(" </tr>");
@@ -218,7 +218,7 @@ namespace PermitServiceTest.Sources
             var currMonthCallendar = new StringBuilder();
             currMonthCallendar.Append("<html><table><tbody>");
             currMonthCallendar.Append(" <tr>");
-            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("     <table class='meses'><tbody><tr>");
             currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
             currMonthCallendar.Append("     </tr></tbody></table>");
             currMonthCallendar.Append(" </tr>");
@@ -238,7 +238,7 @@ namespace PermitServiceTest.Sources
             var currMonthCallendar = new StringBuilder();
             currMonthCallendar.Append("<html><table><tbody>");
             currMonthCallendar.Append(" <tr>");
-            currMonthCallendar.Append("     <table class='messes'><tbody><tr>");
+            currMonthCallendar.Append("     <table class='meses'><tbody><tr>");
             currMonthCallendar.Append("         <td align='center'>mayo de 2025</td>");
             currMonthCallendar.Append("     </tr></tbody></table>");
             currMonthCallendar.Append(" </tr>");
