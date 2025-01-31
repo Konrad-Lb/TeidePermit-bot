@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class EmailNotification(ISmtpClientAdapter smtpClientAdapter, IAppSettings appSettings)  : IEmailNotification
+    public class EmailSender(ISmtpClientAdapter smtpClientAdapter, IAppSettings appSettings)  : IEmailSender
     {
         public async Task SendEmailAsync(string emailSubject, string emailBody, MailAddress recipientEmailAddress)
         {

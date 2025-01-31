@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public interface IEmailNotification
+    public interface IEmailSender
     {
         Task SendEmailAsync(string emailSubject, string emailBody, MailAddress recipientEmailAddress);
     }
