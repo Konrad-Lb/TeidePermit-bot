@@ -54,7 +54,7 @@ namespace PermitService.Helpers
 
         private Month GetCurrenlyDisplayedMonth()
         {
-            var tdMessesCollection = _htmlDocumemt.DocumentNode.SelectNodes("//table[@class='messes']//td[@align='center']") ??
+            var tdMessesCollection = _htmlDocumemt.DocumentNode.SelectNodes("//table[@class='meses']//td[@align='center']") ??
                 throw new InvalidOperationException("Cannot get currently displayed month name. Website seems to have incorrect format.");
             
             var displayedMonthWithYear = tdMessesCollection.First().InnerHtml;
