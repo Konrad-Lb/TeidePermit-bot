@@ -45,6 +45,7 @@ namespace PermitService.Sources
             if (fileProvider.FileExists(inputFilePath))
             {
                 var permitRequestData = await ReadPermitRequestData(inputFilePath);
+               
                 deleteAction(inputFilePath);
                 return permitRequestData.Where(x => IsPermitRequestDataValid(x));
             }
@@ -69,8 +70,21 @@ namespace PermitService.Sources
 
         private async Task<IEnumerable<PermitRequestData>> ReadPermitRequestData(string inputFilePath)
         {
+            var result = new List<PermitRequestData>();
             var csvRawData = await fileProvider.ReadLines(inputFilePath);
-            return csvRawData.Select(csvString => PermitRequestData.FromCsvString(csvString, fieldDelimeter));
+            foreach(var line in csvRawData)
+            {
+                try
+                {
+                    result.Add(PermitRequestData.FromCsvString(line, fieldDelimeter));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    logger.Error(ex.Message);
+                }
+            }
+
+            return result;
         }
 
         private bool IsStartDateBiggerThanEndDate(PermitRequestData permitRequestData)

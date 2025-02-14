@@ -125,9 +125,6 @@ namespace PermitService
 
         //hide firefox logs
         //hide firefox window
-        //test invalid date time format 2025-06-5 in input data
         //provide the same entry startdate;enddate;email in input file as there is in saved file. Duplicated entries are not removed
-        //cathc all exceptions
-        //await opimalization
     }
 }
