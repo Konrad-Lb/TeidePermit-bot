@@ -26,8 +26,7 @@ namespace PermitServiceTest.Sources
                 { Month.March, new List<int> { 1 } }
             };
 
-            var sender = new NotificationSender(emailSenderMock.Object);
-            await sender.SendMotification(availableDays, requestData);
+            await NotificationSender.SendNotification(emailSenderMock.Object, availableDays, requestData);
 
             emailSenderMock.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MailAddress>()), Times.Never);
         }
@@ -42,8 +41,7 @@ namespace PermitServiceTest.Sources
                 { Month.February, new List<int>{ 5, 8, 12 } }
             };
 
-            var sender = new NotificationSender(emailSenderMock.Object);
-            await sender.SendMotification(availableDays, requestData);
+            await NotificationSender.SendNotification(emailSenderMock.Object, availableDays, requestData);
 
             emailSenderMock.Verify(x => x.SendEmailAsync("New Teide permits are available",
                 "New permits are avaliable for date 5 of February\n" +

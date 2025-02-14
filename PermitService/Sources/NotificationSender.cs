@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace PermitService.Sources
 {
-    public class NotificationSender(IEmailSender emailSender)
+    public static class NotificationSender
     {
-        public async Task SendMotification(IDictionary<Month, List<int>> availableDays, PermitRequestData requestData)
+        public static async Task SendNotification(IEmailSender emailSender, IDictionary<Month, List<int>> availableDays, PermitRequestData requestData)
         {
             var emailBody = new StringBuilder();
             var currentDate = requestData.StartDate;
@@ -21,7 +21,7 @@ namespace PermitService.Sources
                 currentDate = currentDate.AddDays(1);
             }
 
-           await SendEmailIfBodyNotEmpty(emailBody.ToString(), requestData.EmailAddress);
+           await SendEmailIfBodyNotEmpty(emailSender, emailBody.ToString(), requestData.EmailAddress);
         }
 
         private static string GenerateEmailBodyForDate(IDictionary<Month, List<int>> availableDays, DateTime date)
@@ -33,8 +33,7 @@ namespace PermitService.Sources
 
             return string.Empty;
         }
-
-        private async Task SendEmailIfBodyNotEmpty(string emailBody, string emailAddress)
+        private static async Task SendEmailIfBodyNotEmpty(IEmailSender emailSender, string emailBody, string emailAddress)
         {
             if (!string.IsNullOrEmpty(emailBody) && !string.IsNullOrEmpty(emailAddress)) 
                 await emailSender.SendEmailAsync("New Teide permits are available", emailBody, new MailAddress(emailAddress));
