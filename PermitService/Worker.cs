@@ -10,6 +10,8 @@ using System.Net.Http.Headers;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.BiDi.Modules.Network;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 
 namespace PermitService
 {
@@ -75,14 +77,22 @@ namespace PermitService
 
         private IDictionary<Month, List<int>> GetPermitAvailableDays(List<Month> months)
         {
-            var webDriver = new FirefoxDriver();
-            webDriver.Navigate().GoToUrl(appSettings.Value.ScrapURL);
-            var webPageCrawler = new TeideWebPageClawler(webDriver);
-            var permitChecker = new PermitChecker(webPageCrawler);
-            var permitAvailableDays = permitChecker.GetAvailableDays(months);
-            webDriver.Quit();
-
-            return permitAvailableDays;
+            var firefoxOptions = new FirefoxOptions { LogLevel = FirefoxDriverLogLevel.Fatal };
+            firefoxOptions.AddArgument("--headless");
+            var webDriver = new FirefoxDriver(firefoxOptions);
+            try
+            {
+                
+                webDriver.Navigate().GoToUrl(appSettings.Value.ScrapURL);
+                var webPageCrawler = new TeideWebPageClawler(webDriver);
+                var permitChecker = new PermitChecker(webPageCrawler);
+                return permitChecker.GetAvailableDays(months);
+                
+            }
+            finally
+            {
+                webDriver.Quit();
+            }
         }
 
         private async Task NotifyUsersAboutAvailablePermits(IDictionary<Month, List<int>> availableDays, IEnumerable<PermitRequestData> requestData)
