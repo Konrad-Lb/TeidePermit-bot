@@ -57,7 +57,7 @@ namespace PermitService
 
             await Task.WhenAll(inputRequestData, savedRequestData);
 
-            var requestData = savedRequestData.Result.Concat(inputRequestData.Result);
+            var requestData = savedRequestData.Result.Concat(inputRequestData.Result).Distinct();
             await csvFileManager.SavePermitRequestData(@"Data\saved_data.csv", requestData.ToList());
 
             return requestData;

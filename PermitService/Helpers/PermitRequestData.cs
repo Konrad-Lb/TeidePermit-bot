@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace PermitService.Helpers
 {
-    public class PermitRequestData
+    public class PermitRequestData : IEquatable<PermitRequestData>
     {
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -144,6 +146,21 @@ namespace PermitService.Helpers
         public string ToCsvString(char fieldDelimeter)
         {
             return $"{StartDate:yyyy-MM-dd}{fieldDelimeter}{EndDate:yyyy-MM-dd}{fieldDelimeter}{EmailAddress}";
+        }
+
+        public override int GetHashCode()
+        {
+            return StartDate.GetHashCode() ^ EndDate.GetHashCode() ^ EmailAddress.GetHashCode();
+        }
+
+        public bool Equals(PermitRequestData? other)
+        {
+            if (other == null)
+                return false;
+
+            return StartDate.Equals(other.StartDate) &&
+               EndDate.Equals(other.EndDate) &&
+               EmailAddress.Equals(other.EmailAddress);
         }
     }
 }

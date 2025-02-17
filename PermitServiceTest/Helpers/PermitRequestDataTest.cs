@@ -165,5 +165,37 @@ namespace PermitServiceTest.Helpers
                                                                                  Month.August, Month.September, Month.October, Month.November, Month.December]));
             Assert.That(permitRequestData4.GetDistinctMonthNumbers(), Is.EqualTo(new List<int>()));
         }
+
+        [Test]
+        public void Equals_DiffrentPermitRequestData_ComparedCorrecly()
+        {
+            var permitRequestData = new PermitRequestData { StartDate = new DateTime(2025, 1, 24), EndDate = new DateTime(2025, 1, 28), EmailAddress = "test@test.com" };
+            var theSame = new PermitRequestData { StartDate = new DateTime(2025, 1, 24), EndDate = new DateTime(2025, 1, 28), EmailAddress = "test@test.com" };
+            var startDateDiffrent = new PermitRequestData { StartDate = new DateTime(2026, 1, 1), EndDate = new DateTime(2025, 1, 28), EmailAddress = "test@test.com" };
+            var endDateDiffrent = new PermitRequestData { StartDate = new DateTime(2025, 1, 14), EndDate = new DateTime(2026, 1, 1), EmailAddress = "test@test.com" };
+            var emailAddressDiffrent = new PermitRequestData { StartDate = new DateTime(2025, 1, 14), EndDate = new DateTime(2025, 1, 28), EmailAddress = "aaa@aaa.com" };
+
+            Assert.That(permitRequestData.Equals(theSame), Is.True);
+            Assert.That(permitRequestData.Equals(startDateDiffrent), Is.False);
+            Assert.That(permitRequestData.Equals(endDateDiffrent), Is.False);
+            Assert.That(permitRequestData.Equals(emailAddressDiffrent), Is.False);
+            Assert.That(permitRequestData.Equals(null), Is.False);
+            
+        }
+
+        [Test]
+        public void GetHashCode_DiffrentPermitRequestData_HasCodeIsCorrect()
+        {
+            var permitRequestData = new PermitRequestData { StartDate = new DateTime(2025, 1, 24), EndDate = new DateTime(2025, 1, 28), EmailAddress = "test@test.com" };
+            var theSame = new PermitRequestData { StartDate = new DateTime(2025, 1, 24), EndDate = new DateTime(2025, 1, 28), EmailAddress = "test@test.com" };
+            var startDateDiffrent = new PermitRequestData { StartDate = new DateTime(2026, 1, 1), EndDate = new DateTime(2025, 1, 28), EmailAddress = "test@test.com" };
+            var endDateDiffrent = new PermitRequestData { StartDate = new DateTime(2025, 1, 14), EndDate = new DateTime(2026, 1, 1), EmailAddress = "test@test.com" };
+            var emailAddressDiffrent = new PermitRequestData { StartDate = new DateTime(2025, 1, 14), EndDate = new DateTime(2025, 1, 28), EmailAddress = "aaa@aaa.com" };
+
+            Assert.That(permitRequestData.GetHashCode(), Is.EqualTo(theSame.GetHashCode()));
+            Assert.That(permitRequestData.GetHashCode(), Is.Not.EqualTo(startDateDiffrent.GetHashCode()));
+            Assert.That(permitRequestData.GetHashCode(), Is.Not.EqualTo(endDateDiffrent.GetHashCode()));
+            Assert.That(permitRequestData.GetHashCode(), Is.Not.EqualTo(emailAddressDiffrent.GetHashCode()));
+        }
     }
 }
