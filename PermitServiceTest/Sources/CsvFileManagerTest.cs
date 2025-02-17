@@ -172,6 +172,22 @@ namespace PermitServiceTest.Sources
         }
 
         [Test]
+        public async Task ReadInputData_InvalidDateTimeFormat_EntryNotReturnedErrorLogAdded()
+        {
+            _fileProviderMock = new Mock<IFileProvider>();
+            _fileProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            _fileProviderMock.Setup(x => x.ReadLines(It.IsAny<string>())).ReturnsAsync([
+                "2025;2026;user1@test.com",
+            ]);
+
+            var fileManager = new CsvFileManager(_logger.Object, _fileProviderMock.Object, _dateTimeServiceStub.Object, ';');
+            var result = (await fileManager.ReadInputDataAsync("input.csv")).ToList();
+            
+            Assert.That(result.Count, Is.EqualTo(0));
+            _logger.Verify(x => x.Error(It.IsAny<string>()));
+        }
+
+        [Test]
         public async Task ReadSavedData_SomeItemsInTheFile_SavedFileNotDeletedAfterRead()
         {
             _fileProviderMock = new Mock<IFileProvider>();
