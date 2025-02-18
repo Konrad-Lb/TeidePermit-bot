@@ -32,7 +32,7 @@ namespace PermitService
                     LogInnerExceptionMessages(ex);
                 }
 
-                logger.Info("Checking permits finished.");
+                logger.Info($"Checking permits finished. Next try in: {appSettings.Value.RequestIntervalInSeconds} seconds");
                 await Task.Delay(appSettings.Value.RequestIntervalInSeconds * 1000, stoppingToken);
             }
         }
@@ -70,7 +70,11 @@ namespace PermitService
             var availableDays = GetPermitAvailableDays(months);
 
             if (availableDays.Count > 0)
+            {
+                logger.Info("Available permits found for some users. They will be notified by email.");
                 await NotifyUsersAboutAvailablePermits(availableDays, requestData);
+                logger.Info("Notification emails to all users sent sucessfully.");
+            }
             else
                 logger.Warning("There are no available days for all requests");
         }
